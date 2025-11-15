@@ -4,16 +4,30 @@
     Author     : camiv
 --%>
 
-<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.util.*" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<html>
+<%
+    String nombre = (String) session.getAttribute("nombreActivo");
+    String rol = (String) session.getAttribute("rolActivo");
+
+    if (nombre == null || rol == null || !"coordinador".equalsIgnoreCase(rol)) {
+        response.sendRedirect("login.jsp");
+        return;
+    }
+%>
+<!DOCTYPE html>
+<html lang="es">
 <head>
+    <meta charset="UTF-8">
     <title>Usuarios Registrados</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/estilos.css">
 </head>
 <body class="bg-light">
     <div class="container mt-5">
         <h2 class="mb-4">Usuarios Registrados</h2>
+
         <table class="table table-bordered table-striped">
             <thead class="table-dark">
                 <tr>
@@ -34,6 +48,7 @@
                 </c:forEach>
             </tbody>
         </table>
+
         <a href="dashboard.jsp" class="btn btn-secondary">Volver al panel</a>
     </div>
 </body>

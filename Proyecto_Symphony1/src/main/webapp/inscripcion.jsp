@@ -4,23 +4,42 @@
     Author     : camiv
 --%>
 
-<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%
+    String nombre = (String) session.getAttribute("nombreActivo");
+    String rol = (String) session.getAttribute("rolActivo");
+
+    if (nombre == null || rol == null || !"estudiante".equalsIgnoreCase(rol)) {
+        response.sendRedirect("login.jsp");
+        return;
+    }
+%>
+<!DOCTYPE html>
 <html>
 <head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <title>Registro de Inscripción</title></head>
+    <title>Inscripción de asignaturas</title>
+    <link rel="stylesheet" href="assets/css/estilos.css">
+</head>
 <body>
-    <h2>Registrar inscripción</h2>
+    <div class="header">
+        <span>Bienvenido, <%= nombre %> (estudiante)</span>
+        <a href="CerrarSesionServlet" class="btn-cerrar">Cerrar sesión</a>
+    </div>
+
+    <h2>Selecciona tus asignaturas musicales</h2>
+
     <form action="InscripcionServlet" method="post">
-        <input type="text" name="estudiante" placeholder="Correo del estudiante"><br>
-        <input type="text" name="programa" placeholder="Programa académico"><br>
-        <input type="date" name="fecha"><br>
-        <button type="submit">Registrar inscripción</button>
+        <label><input type="checkbox" name="asignaturas" value="Teoría Musical"> Teoría Musical</label><br>
+        <label><input type="checkbox" name="asignaturas" value="Instrumento Principal"> Instrumento Principal</label><br>
+        <label><input type="checkbox" name="asignaturas" value="Lectura Musical"> Lectura Musical</label><br>
+        <label><input type="checkbox" name="asignaturas" value="Ensamble"> Ensamble</label><br>
+        <label><input type="checkbox" name="asignaturas" value="Historia de la Música"> Historia de la Música</label><br>
+        <label><input type="checkbox" name="asignaturas" value="Armonía"> Armonía</label><br>
+        <input type="submit" value="Inscribirme" class="btn-enviar">
     </form>
 
-    <c:if test="${not empty mensaje}">
-        <p style="color:green">${mensaje}</p>
-    </c:if>
+    <footer>
+        © 2025 SymphonySIAS - Sistema de Información Académico
+    </footer>
 </body>
 </html>

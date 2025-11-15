@@ -16,7 +16,7 @@ import com.mysymphony.proyecto_symphony1.util.HashUtil;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
-import javax.servlet.annotation.*;
+import javax.servlet.annotation.WebServlet;
 import java.io.IOException;
 
 @WebServlet(name = "LoginServlet", urlPatterns = {"/LoginServlet"})

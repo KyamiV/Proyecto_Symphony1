@@ -10,8 +10,7 @@
 <head>
     <meta charset="UTF-8">
     <title>SymphonySIAS | Registro</title>
-    <link rel="stylesheet" href="assets/adminlte/plugins/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/adminlte/plugins/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/estilos.css">
     <style>
        body {
         background-color: #f4f6f9;

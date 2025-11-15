@@ -9,7 +9,19 @@ import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.*;
 
-@WebFilter
+@WebFilter(filterName = "SessionFilter", urlPatterns = {
+    "/dashboard.jsp",
+    "/verNotas.jsp",
+    "/inscripcion.jsp",
+    "/certificados.jsp",
+    "/registroNotas.jsp",
+    "/listadoEstudiantes.jsp",
+    "/usuarios.jsp",
+    "/reportes.jsp",
+    "/configuracion.jsp",
+    "/auditoria.jsp",
+    "/listaInscripciones.jsp"
+})
 public class SessionFilter implements Filter {
 
     @Override
@@ -26,5 +38,15 @@ public class SessionFilter implements Filter {
         } else {
             ((HttpServletResponse) response).sendRedirect("login.jsp"); // redirige
         }
+    }
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        // No se requiere configuración inicial
+    }
+
+    @Override
+    public void destroy() {
+        // No se requiere limpieza final
     }
 }

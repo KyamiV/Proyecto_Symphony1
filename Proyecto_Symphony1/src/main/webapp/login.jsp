@@ -6,10 +6,13 @@
 
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<html>
+<!DOCTYPE html>
+<html lang="es">
 <head>
+    <meta charset="UTF-8">
     <title>Login Symphony</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/estilos.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body class="bg-light">
@@ -22,11 +25,11 @@
                         <form action="LoginServlet" method="post">
                             <div class="mb-3">
                                 <label for="usuario" class="form-label">Correo</label>
-                                <input type="text" class="form-control" name="usuario" id="usuario" placeholder="camila@symphony.edu" required>
+                                <input type="text" class="form-control" name="usuario" id="usuario" placeholder="correo@symphony.edu" required>
                             </div>
                             <div class="mb-3">
                                 <label for="clave" class="form-label">Contraseña</label>
-                                <input type="password" class="form-control" name="clave" id="clave" placeholder="••••••••" required>
+                                <input type="password" class="form-control" name="clave" id="clave" placeholder="password" required>
                             </div>
                             <button type="submit" class="btn btn-primary w-100">Entrar</button>
                         </form>
@@ -36,7 +39,7 @@
                         </c:if>
 
                         <div class="text-center mt-3">
-                            <small>¿No estás registrada? <a href="registro.jsp">Crear cuenta</a></small>
+                            <small>¿No estás registrado? <a href="registro.jsp">Crear cuenta</a></small>
                         </div>
                     </div>
                 </div>
