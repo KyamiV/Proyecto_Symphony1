@@ -9,9 +9,9 @@ import com.mysymphony.proyecto_symphony1.dao.UsuarioDAO;
 import com.mysymphony.proyecto_symphony1.modelo.Usuario;
 import com.mysymphony.proyecto_symphony1.util.HashUtil;
 
-import javax.servlet.*;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
-import javax.servlet.annotation.*;
 import java.io.IOException;
 
 @WebServlet(name = "RegistroServlet", urlPatterns = {"/RegistroServlet"})
@@ -23,25 +23,39 @@ public class RegistroServlet extends HttpServlet {
         String correo = request.getParameter("correo");
         String nombre = request.getParameter("nombre");
         String clave = request.getParameter("clave");
-        String rol = request.getParameter("rol");
+        String rol = request.getParameter("rol"); // puede venir oculto o como select
 
-        if (correo == null || nombre == null || clave == null || rol == null ||
-            correo.isEmpty() || nombre.isEmpty() || clave.isEmpty() || rol.isEmpty()) {
-            request.setAttribute("mensaje", "Todos los campos son obligatorios.");
+        if (correo == null || nombre == null || clave == null ||
+            correo.isEmpty() || nombre.isEmpty() || clave.isEmpty()) {
+
+            request.setAttribute("error", "⚠️ Todos los campos son obligatorios.");
+            request.getRequestDispatcher("registro.jsp").forward(request, response);
+            return;
+        }
+
+        UsuarioDAO dao = new UsuarioDAO();
+        Usuario existente = dao.buscarPorCorreo(correo);
+
+        if (existente != null) {
+            request.setAttribute("error", "❌ El correo ya está registrado.");
             request.getRequestDispatcher("registro.jsp").forward(request, response);
             return;
         }
 
         String claveHash = HashUtil.sha256(clave);
-        Usuario nuevo = new Usuario(correo, nombre, rol);
-        UsuarioDAO dao = new UsuarioDAO();
+
+        Usuario nuevo = new Usuario();
+        nuevo.setCorreo(correo);
+        nuevo.setNombre(nombre);
+        nuevo.setRol(rol != null ? rol : "estudiante"); // por defecto estudiante
+
         boolean registrado = dao.registrar(nuevo, claveHash);
 
         if (registrado) {
-            request.setAttribute("mensaje", "Registro exitoso. Inicia sesión.");
+            request.setAttribute("mensaje", "✅ Registro exitoso. Ahora puedes iniciar sesión.");
             request.getRequestDispatcher("login.jsp").forward(request, response);
         } else {
-            request.setAttribute("mensaje", "Error al registrar usuario");
+            request.setAttribute("error", "❌ Error al registrar. Intenta nuevamente.");
             request.getRequestDispatcher("registro.jsp").forward(request, response);
         }
     }

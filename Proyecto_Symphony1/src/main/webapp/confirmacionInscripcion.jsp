@@ -13,7 +13,6 @@
 <html>
 <head>
     <title>Confirmación de inscripción musical</title>
-    <link rel="stylesheet" href="estilos.css">
     <link rel="stylesheet" href="assets/css/estilos.css">
 </head>
 <body>

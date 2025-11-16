@@ -10,6 +10,10 @@ public class Usuario {
     private String nombre;
     private String rol;
 
+    // ✅ Nuevos atributos para el módulo docente
+    private String instrumento;
+    private String etapa;
+
     public Usuario() {}
 
     public Usuario(String correo, String nombre, String rol) {
@@ -29,4 +33,11 @@ public class Usuario {
 
     public String getRol() { return rol; }
     public void setRol(String rol) { this.rol = rol; }
+
+    // ✅ Getters y setters nuevos
+    public String getInstrumento() { return instrumento; }
+    public void setInstrumento(String instrumento) { this.instrumento = instrumento; }
+
+    public String getEtapa() { return etapa; }
+    public void setEtapa(String etapa) { this.etapa = etapa; }
 }

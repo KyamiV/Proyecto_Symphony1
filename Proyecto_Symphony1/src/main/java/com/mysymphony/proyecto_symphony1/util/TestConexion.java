@@ -2,6 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
+
 package com.mysymphony.proyecto_symphony1.util;
 
 import java.sql.Connection;
@@ -9,9 +10,10 @@ import java.sql.Connection;
 public class TestConexion {
     public static void main(String[] args) {
         try {
-            Connection conn = Conexion.getConexion();
+            Connection conn = Conexion.getConnection(); // ← método correcto
             if (conn != null) {
                 System.out.println("✅ Conexión establecida correctamente");
+                conn.close(); // buena práctica: cerrar conexión
             } else {
                 System.out.println("❌ No se pudo conectar a la base de datos");
             }

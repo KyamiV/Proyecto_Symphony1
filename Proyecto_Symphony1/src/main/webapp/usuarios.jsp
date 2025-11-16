@@ -41,7 +41,7 @@
                 <c:forEach var="u" items="${usuarios}">
                     <tr>
                         <td>${u.id}</td>
-                        <td>${u.usuario}</td>
+                        <td>${u.correo}</td> <!-- ✅ corregido -->
                         <td>${u.nombre}</td>
                         <td>${u.rol}</td>
                     </tr>

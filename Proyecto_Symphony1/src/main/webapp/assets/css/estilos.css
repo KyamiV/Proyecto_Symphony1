@@ -7,6 +7,7 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css
     Author     : camiv
 */
 
+/* Estilos base */
 body {
     font-family: 'Segoe UI', sans-serif;
     background-color: #f4f4f9;
@@ -14,15 +15,36 @@ body {
     padding: 0;
 }
 
-.header {
+/* Encabezado institucional */
+.header, .dashboard-header {
     background-color: #2c3e50;
     color: white;
-    padding: 15px;
+    padding: 15px 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    font-family: 'Poppins', sans-serif;
 }
 
+/* Logo */
+.dashboard-header img {
+    height: 40px;
+    max-width: 100px;
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+/* Títulos */
+h2, h3, h4 {
+    color: #2c3e50;
+    text-align: center;
+    margin-top: 30px;
+    font-weight: 600;
+}
+
+/* Botones generales */
 .btn-cerrar, .btn-volver, .btn-enviar {
     background-color: #3498db;
     color: white;
@@ -32,25 +54,19 @@ body {
     border-radius: 4px;
     margin: 10px;
     cursor: pointer;
+    font-weight: 500;
 }
 
-h2 {
-    color: #2c3e50;
-    text-align: center;
-    margin-top: 30px;
+.btn-volver {
+    background-color: #6c757d;
+}
+.btn-volver:hover {
+    background-color: #5a6268;
 }
 
-form {
-    max-width: 500px;
-    margin: 0 auto;
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
+/* Tablas generales */
 .tabla-notas {
-    width: 80%;
+    width: 90%;
     margin: 20px auto;
     border-collapse: collapse;
     background-color: white;
@@ -64,14 +80,75 @@ form {
 }
 
 .tabla-notas th {
-    background-color: #3498db;
+    background-color: #2e86de;
     color: white;
 }
 
+/* Footer */
 footer {
-    background-color: #2c3e50;
-    color: white;
+    color: #333;
     text-align: center;
     padding: 10px;
     margin-top: 40px;
+    border-top: 1px solid #ccc;
+    background: none;
+}
+
+/* Contenedores institucionales */
+.dashboard-box, .tabla-box, .form-box {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.08);
+}
+
+/* Colores por rol */
+.dashboard-estudiante {
+    background-color: #3498db;
+    color: white;
+}
+.dashboard-docente {
+    background-color: #2e86de;
+    color: white;
+}
+.dashboard-coordinador {
+    background-color: #00b894;
+    color: white;
+}
+.dashboard-admin {
+    background-color: #2c3e50;
+    color: white;
+}
+
+/* Botones por rol */
+.btn-dashboard {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 600;
+    border-radius: 6px;
+    text-decoration: none;
+    color: white;
+}
+.btn-estudiante {
+    background-color: #5dade2;
+}
+.btn-docente {
+    background-color: #2e86de;
+}
+.btn-coordinador {
+    background-color: #55efc4;
+}
+.btn-admin {
+    background-color: #566573;
+}
+
+/* Estilos específicos para tablas de calificaciones */
+.table th, .table td {
+    white-space: nowrap;
+    vertical-align: middle;
 }

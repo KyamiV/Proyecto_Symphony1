@@ -71,12 +71,18 @@
         .mensaje {
             font-weight: bold;
             margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
         }
         .exito {
             color: green;
+            background-color: #e6ffe6;
+            border: 1px solid green;
         }
         .error {
             color: red;
+            background-color: #ffe6e6;
+            border: 1px solid red;
         }
     </style>
 </head>
@@ -89,27 +95,31 @@
         <div class="mensaje error">❌ Error al guardar las notas. Intenta de nuevo.</div>
     <% } %>
 
-    <form action="GuardarNotasServlet" method="post">
-        <input type="hidden" name="curso" value="<%= curso %>">
-        <table class="table table-bordered">
-            <thead class="table-light">
-                <tr><th>Estudiante</th><th>Nota</th></tr>
-            </thead>
-            <tbody>
-            <% for (String estudiante : estudiantes) {
-                String clave = estudiante.replaceAll(" ", "_");
-            %>
-                <tr>
-                    <td><%= estudiante %></td>
-                    <td>
-                        <input type="number" name="nota_<%= clave %>" min="0" max="5" step="0.1" required class="form-control">
-                        <input type="hidden" name="estudiante_<%= clave %>" value="<%= estudiante %>">
-                    </td>
-                </tr>
-            <% } %>
-            </tbody>
-        </table>
-        <button type="submit" class="btn btn-primary">Guardar notas</button>
-    </form>
+    <% if (estudiantes.isEmpty()) { %>
+        <div class="mensaje error">⚠️ No hay estudiantes registrados para este curso.</div>
+    <% } else { %>
+        <form action="GuardarNotasServlet" method="post">
+            <input type="hidden" name="curso" value="<%= curso %>">
+            <table class="table table-bordered">
+                <thead class="table-light">
+                    <tr><th>Estudiante</th><th>Nota</th></tr>
+                </thead>
+                <tbody>
+                <% for (String estudiante : estudiantes) {
+                    String clave = estudiante.replaceAll(" ", "_");
+                %>
+                    <tr>
+                        <td><%= estudiante %></td>
+                        <td>
+                            <input type="number" name="nota_<%= clave %>" min="0" max="5" step="0.1" required class="form-control">
+                            <input type="hidden" name="estudiante_<%= clave %>" value="<%= estudiante %>">
+                        </td>
+                    </tr>
+                <% } %>
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-primary">Guardar notas</button>
+        </form>
+    <% } %>
 </body>
 </html>

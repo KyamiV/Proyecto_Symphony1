@@ -18,7 +18,7 @@ public class InscripcionDAO {
     public boolean registrar(Inscripcion insc) {
         String sql = "INSERT INTO inscripciones (estudiante, programa, fecha) VALUES (?, ?, ?)";
 
-        try (Connection con = Conexion.getConexion();
+        try (Connection con = Conexion.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, insc.getEstudiante());
@@ -27,8 +27,8 @@ public class InscripcionDAO {
 
             return ps.executeUpdate() > 0;
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            System.err.println("Error al registrar inscripción: " + e.getMessage());
             return false;
         }
     }
@@ -38,7 +38,7 @@ public class InscripcionDAO {
         List<Inscripcion> lista = new ArrayList<>();
         String sql = "SELECT * FROM inscripciones";
 
-        try (Connection con = Conexion.getConexion();
+        try (Connection con = Conexion.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
@@ -50,8 +50,8 @@ public class InscripcionDAO {
                 lista.add(i);
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            System.err.println("Error al listar inscripciones: " + e.getMessage());
         }
 
         return lista;
@@ -62,24 +62,25 @@ public class InscripcionDAO {
         List<Inscripcion> lista = new ArrayList<>();
         String sql = "SELECT * FROM inscripciones WHERE estudiante LIKE ? OR programa LIKE ?";
 
-        try (Connection con = Conexion.getConexion();
+        try (Connection con = Conexion.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             String criterio = "%" + filtro + "%";
             ps.setString(1, criterio);
             ps.setString(2, criterio);
-            ResultSet rs = ps.executeQuery();
 
-            while (rs.next()) {
-                Inscripcion i = new Inscripcion();
-                i.setEstudiante(rs.getString("estudiante"));
-                i.setPrograma(rs.getString("programa"));
-                i.setFecha(rs.getString("fecha"));
-                lista.add(i);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Inscripcion i = new Inscripcion();
+                    i.setEstudiante(rs.getString("estudiante"));
+                    i.setPrograma(rs.getString("programa"));
+                    i.setFecha(rs.getString("fecha"));
+                    lista.add(i);
+                }
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            System.err.println("Error al buscar inscripciones: " + e.getMessage());
         }
 
         return lista;

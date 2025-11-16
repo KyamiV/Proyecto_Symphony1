@@ -11,8 +11,8 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 
-@WebServlet("/GuardarNotasServlet")
-public class GuardarNotasServlet extends HttpServlet {
+@WebServlet("/GuardarObservacionesServlet")
+public class GuardarObservacionesServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -25,7 +25,6 @@ public class GuardarNotasServlet extends HttpServlet {
             return;
         }
 
-        String curso = request.getParameter("curso");
         boolean exito = true;
 
         try {
@@ -36,24 +35,16 @@ public class GuardarNotasServlet extends HttpServlet {
                 for (Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
                     String param = entry.getKey();
 
-                    if (param.startsWith("nota_")) {
-                        String clave = param.substring(5);
+                    if (param.startsWith("obs_")) {
+                        String clave = param.substring(4);
                         String estudiante = request.getParameter("estudiante_" + clave);
-                        String notaStr = request.getParameter(param);
+                        String observacion = request.getParameter(param);
 
-                        if (estudiante != null && notaStr != null && !notaStr.isEmpty()) {
-                            double nota = Double.parseDouble(notaStr);
-
-                            // Validación de rango
-                            if (nota < 0.0 || nota > 5.0) {
-                                continue; // O puedes marcar exito = false y salir
-                            }
-
+                        if (estudiante != null && observacion != null && !observacion.trim().isEmpty()) {
                             try (PreparedStatement ps = conn.prepareStatement(
-                                    "INSERT INTO notas (nombre_estudiante, curso, nota) VALUES (?, ?, ?)")) {
+                                    "INSERT INTO observaciones (nombre_estudiante, observacion, fecha) VALUES (?, ?, NOW())")) {
                                 ps.setString(1, estudiante);
-                                ps.setString(2, curso);
-                                ps.setDouble(3, nota);
+                                ps.setString(2, observacion);
                                 ps.executeUpdate();
                             }
                         }
@@ -68,9 +59,9 @@ public class GuardarNotasServlet extends HttpServlet {
         }
 
         if (exito) {
-            response.sendRedirect("registroNotas.jsp?exito=true");
+            response.sendRedirect("observaciones.jsp?exito=true");
         } else {
-            response.sendRedirect("registroNotas.jsp?error=true");
+            response.sendRedirect("observaciones.jsp?error=true");
         }
     }
 }

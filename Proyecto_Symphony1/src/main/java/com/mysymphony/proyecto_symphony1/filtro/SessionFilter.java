@@ -11,38 +11,44 @@ import javax.servlet.http.*;
 
 @WebFilter(filterName = "SessionFilter", urlPatterns = {
     "/dashboard.jsp",
-    "/verNotas.jsp",
-    "/inscripcion.jsp",
-    "/certificados.jsp",
-    "/registroNotas.jsp",
-    "/listadoEstudiantes.jsp",
+    "/estudiante/*",
+    "/docente/*",
     "/usuarios.jsp",
     "/reportes.jsp",
     "/configuracion.jsp",
     "/auditoria.jsp",
-    "/listaInscripciones.jsp"
+    "/listadoEstudiantes.jsp",
+    "/listainscripciones.jsp",
+    "/confirmacionInscripcion.jsp",
+    "/panel.jsp",
+    "/registroNotas.jsp",
+    "/verEstudiantes.jsp",
+    "/verObservaciones.jsp"
 })
 public class SessionFilter implements Filter {
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        // No se requiere configuración inicial
+    }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
         HttpServletRequest req = (HttpServletRequest) request;
+        HttpServletResponse res = (HttpServletResponse) response;
         HttpSession session = req.getSession(false);
 
-        boolean sesionActiva = (session != null && session.getAttribute("usuarioActivo") != null);
+        boolean sesionActiva = (session != null &&
+                                session.getAttribute("nombreActivo") != null &&
+                                session.getAttribute("rolActivo") != null);
 
         if (sesionActiva) {
-            chain.doFilter(request, response); // continúa
+            chain.doFilter(request, response); // continúa con la solicitud
         } else {
-            ((HttpServletResponse) response).sendRedirect("login.jsp"); // redirige
+            res.sendRedirect(req.getContextPath() + "/login.jsp"); // redirige si no hay sesión
         }
-    }
-
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        // No se requiere configuración inicial
     }
 
     @Override
