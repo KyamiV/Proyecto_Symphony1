@@ -1,23 +1,19 @@
 <%-- 
-    Document   : estudiante
-    Created on : 15/11/2025, 1:28:43 p. m.
-    Author     : camiv
+    Document   : estudiante.jsp
+    Rol        : Estudiante
+    Autor      : Camila
+    Trazabilidad: Panel principal con indicadores, accesos rápidos y validación de sesión.
 --%>
 
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%
-    String nombre = (String) session.getAttribute("nombreActivo");
-    String rol = (String) session.getAttribute("rolActivo");
+<%@ page contentType="text/html;charset=UTF-8" language="java" session="true" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-    if (nombre == null || rol == null || !"estudiante".equalsIgnoreCase(rol)) {
-        response.sendRedirect("login.jsp");
-        return;
-    }
+<c:choose>
+    <c:when test="${empty sessionScope.nombreActivo or empty sessionScope.rolActivo or sessionScope.rolActivo ne 'estudiante'}">
+        <c:redirect url="${pageContext.request.contextPath}/login.jsp"/>
+    </c:when>
+</c:choose>
 
-    String claseHeader = "dashboard-estudiante";
-    String claseBoton = "btn-estudiante";
-    String iconoRol = "fas fa-user-graduate";
-%>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -26,90 +22,123 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/estilos.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/estilos.css">
+
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #f4f6f9;
-            padding: 30px;
         }
         .dashboard-box {
-            background: #ffffff;
-            padding: 25px;
+            background: #fff;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .indicador-box {
+            background: #f8f9fa;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.08);
+            padding: 1rem;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease;
         }
-        .dashboard-header {
-            padding: 15px 20px;
-            border-radius: 10px 10px 0 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .dashboard-header img {
-            max-height: 80px;
-            border-radius: 8px;
-        }
-        .dashboard-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-        .dashboard-body {
-            padding-top: 20px;
+        .indicador-box:hover {
+            transform: translateY(-3px);
         }
         .btn-dashboard {
-            font-weight: 500;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            display: block;
-            text-align: center;
-            padding: 12px;
+            display: inline-block;
+            background: #198754;
+            color: #fff;
+            padding: 1rem;
+            border-radius: 10px;
             text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s ease;
         }
-        .btn-dashboard i {
-            margin-right: 6px;
+        .btn-dashboard:hover {
+            background: #145c32;
+            color: #fff;
         }
-        .dashboard-estudiante { background-color: #198754; color: white; }
-        .btn-estudiante { background-color: #198754; color: white; }
+        .alert-info {
+            border-radius: 10px;
+            font-weight: 500;
+        }
     </style>
 </head>
-<body>
-    <div class="container dashboard-box">
-        <div class="dashboard-header <%= claseHeader %>">
-            <div>
-                <div class="dashboard-title"><i class="<%= iconoRol %>"></i> Panel Estudiante</div>
-                <div>Bienvenida, <strong><%= nombre %></strong> (<%= rol %>)</div>
+<body class="bg-light">
+
+    <!-- 📂 Menú lateral institucional -->
+    <jsp:include page="../fragmentos/sidebar.jsp" />
+
+    <!-- 🧭 Encabezado institucional -->
+    <jsp:include page="../fragmentos/header.jsp" />
+
+    <!-- Contenido principal -->
+    <div class="container dashboard-box mt-4">
+
+        <!-- Mensajes institucionales -->
+        <c:if test="${not empty sessionScope.mensaje}">
+            <div class="alert alert-info text-center mb-4">
+                <i class="fas fa-info-circle"></i> ${sessionScope.mensaje}
             </div>
-            <img src="../assets/img/logo.png" alt="Logo SymphonySIAS">
+        </c:if>
+
+        <!-- Indicadores -->
+        <div class="row text-center mb-4">
+            <div class="col-md-4">
+                <div class="indicador-box">
+                    <h6><i class="fas fa-chalkboard text-info"></i> Clases inscritas</h6>
+                    <p class="fs-4 text-primary"><c:out value="${totalClasesInscritas}" default="0"/></p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="indicador-box">
+                    <h6><i class="fas fa-book text-success"></i> Notas registradas</h6>
+                    <p class="fs-4 text-success"><c:out value="${totalNotasEstudiante}" default="0"/></p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="indicador-box">
+                    <h6><i class="fas fa-file-alt text-warning"></i> Certificados emitidos</h6>
+                    <p class="fs-4 text-warning"><c:out value="${totalCertificados}" default="0"/></p>
+                </div>
+            </div>
         </div>
 
-        <div class="dashboard-body">
-            <div class="row">
-                <div class="col-md-4">
-                    <a href="verNotas.jsp" class="btn-dashboard <%= claseBoton %>">
-                        <i class="fas fa-book"></i> Ver mis notas
-                    </a>
-                </div>
-                <div class="col-md-4">
-                    <a href="inscripcion.jsp" class="btn-dashboard <%= claseBoton %>">
-                        <i class="fas fa-edit"></i> Inscribirme en cursos
-                    </a>
-                </div>
-                <div class="col-md-4">
-                    <a href="certificados.jsp" class="btn-dashboard <%= claseBoton %>">
-                        <i class="fas fa-file-alt"></i> Mis certificados
-                    </a>
-                </div>
+        <!-- Accesos rápidos -->
+        <div class="row text-center mb-4">
+            <div class="col-md-3 mb-3">
+                <a href="${pageContext.request.contextPath}/estudiante/verNotas.jsp" class="btn-dashboard w-100">
+                    <i class="fas fa-book"></i> Ver mis notas
+                </a>
             </div>
+            <div class="col-md-3 mb-3">
+                <a href="${pageContext.request.contextPath}/VerClasesEstudianteServlet" class="btn-dashboard w-100">
+                    <i class="fas fa-edit"></i> Inscribirme en cursos
+                </a>
+            </div>
+            <div class="col-md-3 mb-3">
+                <a href="${pageContext.request.contextPath}/estudiante/certificados.jsp" class="btn-dashboard w-100">
+                    <i class="fas fa-file-alt"></i> Mis certificados
+                </a>
+            </div>
+            <!-- 🔗 Nuevo módulo institucional -->
+            <div class="col-md-3 mb-3">
+                <a href="${pageContext.request.contextPath}/ActividadesEstudianteServlet" class="btn-dashboard w-100">
+                    <i class="fas fa-tasks"></i> Mis actividades
+                </a>
+            </div>
+        </div>
 
-            <div class="text-end mt-4">
-                <a href="CerrarSesionServlet" class="btn btn-outline-secondary">Cerrar sesión</a>
-            </div>
+        <!-- Botón de cierre de sesión -->
+        <div class="text-end mt-4">
+            <a href="${pageContext.request.contextPath}/CerrarSesionServlet" class="btn btn-outline-secondary">
+                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+            </a>
         </div>
     </div>
 
-    <footer class="text-center mt-5 text-muted">
-        &copy; 2025 SymphonySIAS - Sistema de Información Académico
-    </footer>
+    <!-- 📌 Pie de página -->
+    <jsp:include page="../fragmentos/footer.jsp" />
+
 </body>
 </html>

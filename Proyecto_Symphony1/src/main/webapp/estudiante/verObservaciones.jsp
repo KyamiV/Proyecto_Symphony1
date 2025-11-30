@@ -1,24 +1,17 @@
 <%--  
-    Document   : certificados.jsp
-    Created on : 30/11/2025
+    Document   : verObservaciones.jsp
+    Created on : 18/11/2025, 11:53:31 a. m.
     Autor      : camiv
     Rol        : estudiante
-    Propósito  : Visualizar y descargar certificados musicales académicos
-    Trazabilidad: recibe atributo 'certificados' desde CertificadosEstudianteServlet, validado con auditoría institucional
---%>
-<%--  
-    Document   : certificados.jsp
-    Rol        : estudiante
-    Autor      : Camila
-    Propósito  : Listar certificados académicos y permitir descarga en PDF
-    Trazabilidad: recibe atributo 'certificados' desde CertificadosEstudianteServlet
+    Propósito  : Visualizar observaciones pedagógicas registradas por los docentes
+    Trazabilidad: recibe atributo 'observaciones' desde VerObservacionesEstudianteServlet, validado con auditoría institucional
 --%>
 
 <%@ page contentType="text/html;charset=UTF-8" language="java" session="true" %>
-<%@ page import="java.util.List, java.util.Map, java.util.ArrayList" %>
+<%@ page import="java.util.List, java.util.Map" %>
 
 <%
-    // 🔐 Validación de sesión y rol estudiante
+    // 🔐 Validación de sesión y rol
     String nombre = (String) session.getAttribute("nombreActivo");
     String rol = (String) session.getAttribute("rolActivo");
 
@@ -27,15 +20,8 @@
         return;
     }
 
-    // 📦 Recuperación segura del atributo certificados
-    Object certObj = request.getAttribute("certificados");
-    List<Map<String, String>> certificados = new ArrayList<>();
-
-    if (certObj instanceof List) {
-        certificados = (List<Map<String, String>>) certObj;
-    }
-
-    // 📢 Mensaje institucional recibido desde el servlet
+    // 📦 Datos recibidos desde el servlet
+    List<Map<String, String>> observaciones = (List<Map<String, String>>) request.getAttribute("observaciones");
     String mensaje = (String) request.getAttribute("mensaje");
 %>
 
@@ -43,13 +29,54 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mis certificados - SymphonySIAS</title>
+    <title>Observaciones pedagógicas - SymphonySIAS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/estilos.css">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f6f9;
+        }
+        .dashboard-box {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            max-width: 1100px;
+            margin: 30px auto;
+        }
+        .dashboard-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #198754;
+        }
+        .btn-volver {
+            background-color: #198754;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+        .btn-volver:hover {
+            background-color: #157347;
+            color: #fff;
+        }
+        .table thead {
+            background-color: #0dcaf0;
+            color: #000;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f1f3f5;
+        }
+    </style>
 </head>
+<body class="bg-light">
 
     <!-- 📂 Menú lateral institucional -->
     <jsp:include page="../fragmentos/sidebar.jsp" />
@@ -61,53 +88,49 @@
     <div class="container dashboard-box">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <div class="dashboard-title"><i class="fas fa-file-alt"></i> Mis certificados</div>
+                <div class="dashboard-title"><i class="fas fa-comments"></i> Observaciones pedagógicas</div>
                 <div><strong><%= nombre %></strong> (estudiante)</div>
             </div>
             <img src="<%= request.getContextPath() %>/assets/img/logo.png" alt="Logo SymphonySIAS" style="max-height:70px;">
         </div>
 
-        <!-- 📄 Cuerpo de la vista -->
+        <!-- 📄 Cuerpo principal -->
         <div class="dashboard-body">
-            <h4 class="text-center mt-3">Visualización de certificados musicales</h4>
-            <p class="text-center">Desde aquí podrás visualizar y descargar tus certificados académicos.</p>
+            <h4 class="text-center mt-3">Seguimiento académico y observaciones docentes</h4>
 
             <% if (mensaje != null) { %>
                 <div class="alert alert-info text-center mt-3"><%= mensaje %></div>
-            <% } else if (certificados == null || certificados.isEmpty()) { %>
+            <% } else if (observaciones == null || observaciones.isEmpty()) { %>
                 <div class="alert alert-warning text-center mt-4">
-                    <i class="fas fa-file-alt"></i> No tienes certificados disponibles aún.
+                    <i class="fas fa-comment-slash"></i> No tienes observaciones registradas aún.
                 </div>
             <% } else { %>
-                <!-- 📊 Tabla de certificados -->
+                <!-- 📊 Tabla de observaciones -->
                 <div class="table-responsive mt-4">
                     <table class="table table-bordered table-hover align-middle text-center">
                         <thead>
                             <tr>
                                 <th>Instrumento</th>
                                 <th>Etapa</th>
+                                <th>Observación</th>
                                 <th>Docente</th>
                                 <th>Fecha</th>
-                                <th>Estado</th>
-                                <th>Descargar</th>
+                                <th>Enviada</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <% for (Map<String, String> cert : certificados) { %>
+                            <% for (Map<String, String> obs : observaciones) { %>
                                 <tr>
-                                    <td><%= cert.get("instrumento") %></td>
-                                    <td><%= cert.get("etapa") %></td>
-                                    <td><%= cert.get("docente") %></td>
-                                    <td><%= cert.get("fecha") %></td>
-                                    <td><%= cert.get("estado") %></td>
+                                    <td><%= obs.get("instrumento") %></td>
+                                    <td><%= obs.get("etapa_pedagogica") %></td>
+                                    <td><%= obs.get("comentario") %></td>
+                                    <td><%= obs.get("docente") %></td>
+                                    <td><%= obs.get("fecha") %></td>
                                     <td>
-                                        <% if ("Emitido".equalsIgnoreCase(cert.get("estado"))) { %>
-                                            <a href="<%= request.getContextPath() %>/DescargarCertificadoServlet?instrumento=<%= cert.get("instrumento") %>&etapa=<%= cert.get("etapa") %>&docente=<%= cert.get("docente") %>"
-                                               class="btn btn-sm btn-success" target="_blank">
-                                                <i class="fas fa-download"></i> Descargar
-                                            </a>
+                                        <% if ("Sí".equalsIgnoreCase(obs.get("enviada"))) { %>
+                                            <span class="badge bg-success">Sí</span>
                                         <% } else { %>
-                                            <span class="text-muted">No disponible</span>
+                                            <span class="badge bg-secondary">No</span>
                                         <% } %>
                                     </td>
                                 </tr>

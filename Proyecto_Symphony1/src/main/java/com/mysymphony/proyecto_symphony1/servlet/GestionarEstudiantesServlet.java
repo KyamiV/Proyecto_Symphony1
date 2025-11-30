@@ -7,10 +7,13 @@ package com.mysymphony.proyecto_symphony1.servlet;
 
 /**
  * Servlet para listar estudiantes registrados y mostrar sus datos musicales.
- * Autor: camiv
+ * Rol: docente
+ * Autor: Camila
+ * Trazabilidad: valida sesión, consulta estudiantes y registra en auditoría institucional.
  */
 
 import com.mysymphony.proyecto_symphony1.util.Conexion;
+import com.mysymphony.proyecto_symphony1.dao.AuditoriaDAO;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -27,17 +30,21 @@ public class GestionarEstudiantesServlet extends HttpServlet {
             throws ServletException, IOException {
 
         HttpSession sesion = request.getSession();
+        String nombre = (String) sesion.getAttribute("nombreActivo");
         String rol = (String) sesion.getAttribute("rolActivo");
 
-        if (rol == null || !"docente".equalsIgnoreCase(rol)) {
+        if (nombre == null || rol == null || !"docente".equalsIgnoreCase(rol)) {
+            if (sesion != null) {
+                sesion.setAttribute("mensaje", "⚠️ Acceso restringido: requiere rol docente.");
+            }
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
 
         List<Map<String, String>> estudiantes = new ArrayList<>();
 
-        String sql = "SELECT u.id_usuario, u.nombre, e.instrumento, e.nivel_tecnico, e.etapa " +
-                     "FROM usuarios u LEFT JOIN estudiantes e ON u.id_usuario = e.id_usuario " +
+        String sql = "SELECT u.id, u.nombre, e.instrumento, e.nivel_tecnico, e.etapa " +
+                     "FROM usuarios u LEFT JOIN estudiantes e ON u.id = e.id_usuario " +
                      "WHERE u.rol = 'estudiante'";
 
         try (Connection con = Conexion.getConnection();
@@ -46,7 +53,7 @@ public class GestionarEstudiantesServlet extends HttpServlet {
 
             while (rs.next()) {
                 Map<String, String> est = new HashMap<>();
-                est.put("id", rs.getString("id_usuario"));
+                est.put("id", rs.getString("id"));
                 est.put("nombre", rs.getString("nombre"));
                 est.put("instrumento", rs.getString("instrumento"));
                 est.put("nivel", rs.getString("nivel_tecnico"));
@@ -54,8 +61,18 @@ public class GestionarEstudiantesServlet extends HttpServlet {
                 estudiantes.add(est);
             }
 
+            // ✅ Registro de trazabilidad institucional
+            AuditoriaDAO auditoriaDAO = new AuditoriaDAO(con);
+            Map<String, String> registro = new HashMap<>();
+            registro.put("usuario", nombre);
+            registro.put("rol", rol);
+            registro.put("modulo", "Estudiantes");
+            registro.put("accion", "Consulta de estudiantes registrados");
+            registro.put("ip_origen", request.getRemoteAddr());
+            auditoriaDAO.registrarAccion(registro);
+
         } catch (SQLException e) {
-            System.err.println("Error al cargar estudiantes: " + e.getMessage());
+            System.err.println("❌ Error al cargar estudiantes: " + e.getMessage());
             request.setAttribute("error", "❌ Error al cargar estudiantes: " + e.getMessage());
         }
 
