@@ -7,10 +7,18 @@ package com.mysymphony.proyecto_symphony1.servlet;
 
 /**
  * Servlet para editar o registrar datos musicales del estudiante.
- * Autor: camiv
+ * Rol: docente
+ * Autor: Camila
+ * Trazabilidad:
+ *   - Valida sesión
+ *   - Inserta o actualiza datos musicales
+ *   - Registra acción en bitácora y auditoría institucional
+ *   - Envía datos a la vista editarEstudiante.jsp
  */
 
 import com.mysymphony.proyecto_symphony1.util.Conexion;
+import com.mysymphony.proyecto_symphony1.dao.AuditoriaDAO;
+import com.mysymphony.proyecto_symphony1.dao.BitacoraDAO;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -28,9 +36,10 @@ public class EditarEstudianteServlet extends HttpServlet {
             throws ServletException, IOException {
 
         HttpSession sesion = request.getSession();
+        String nombre = (String) sesion.getAttribute("nombreActivo");
         String rol = (String) sesion.getAttribute("rolActivo");
 
-        if (rol == null || !"docente".equalsIgnoreCase(rol)) {
+        if (nombre == null || rol == null || !"docente".equalsIgnoreCase(rol)) {
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
@@ -41,41 +50,60 @@ public class EditarEstudianteServlet extends HttpServlet {
         String etapa = request.getParameter("etapa");
 
         String mensaje = "";
+        String accion = "";
 
         try (Connection con = Conexion.getConnection()) {
+            con.setAutoCommit(false); // 🚦 Manejo de transacción
 
             // Verificar si el estudiante ya tiene registro
             String sqlCheck = "SELECT COUNT(*) FROM estudiantes WHERE id_usuario = ?";
+            boolean existe;
             try (PreparedStatement psCheck = con.prepareStatement(sqlCheck)) {
                 psCheck.setString(1, id);
                 try (ResultSet rs = psCheck.executeQuery()) {
-                    boolean existe = rs.next() && rs.getInt(1) > 0;
-
-                    if (existe) {
-                        // Actualizar datos
-                        String sqlUpdate = "UPDATE estudiantes SET instrumento = ?, nivel_tecnico = ?, etapa = ? WHERE id_usuario = ?";
-                        try (PreparedStatement psUpdate = con.prepareStatement(sqlUpdate)) {
-                            psUpdate.setString(1, instrumento);
-                            psUpdate.setString(2, nivel);
-                            psUpdate.setString(3, etapa);
-                            psUpdate.setString(4, id);
-                            psUpdate.executeUpdate();
-                            mensaje = "✅ Datos actualizados correctamente.";
-                        }
-                    } else {
-                        // Insertar nuevo registro
-                        String sqlInsert = "INSERT INTO estudiantes (id_usuario, instrumento, nivel_tecnico, etapa) VALUES (?, ?, ?, ?)";
-                        try (PreparedStatement psInsert = con.prepareStatement(sqlInsert)) {
-                            psInsert.setString(1, id);
-                            psInsert.setString(2, instrumento);
-                            psInsert.setString(3, nivel);
-                            psInsert.setString(4, etapa);
-                            psInsert.executeUpdate();
-                            mensaje = "✅ Datos registrados correctamente.";
-                        }
-                    }
+                    existe = rs.next() && rs.getInt(1) > 0;
                 }
             }
+
+            if (existe) {
+                // Actualizar datos
+                String sqlUpdate = "UPDATE estudiantes SET instrumento = ?, nivel_tecnico = ?, etapa = ? WHERE id_usuario = ?";
+                try (PreparedStatement psUpdate = con.prepareStatement(sqlUpdate)) {
+                    psUpdate.setString(1, instrumento);
+                    psUpdate.setString(2, nivel);
+                    psUpdate.setString(3, etapa);
+                    psUpdate.setString(4, id);
+                    psUpdate.executeUpdate();
+                    mensaje = "✅ Datos actualizados correctamente.";
+                    accion = "Actualización de datos musicales del estudiante";
+                }
+            } else {
+                // Insertar nuevo registro
+                String sqlInsert = "INSERT INTO estudiantes (id_usuario, instrumento, nivel_tecnico, etapa) VALUES (?, ?, ?, ?)";
+                try (PreparedStatement psInsert = con.prepareStatement(sqlInsert)) {
+                    psInsert.setString(1, id);
+                    psInsert.setString(2, instrumento);
+                    psInsert.setString(3, nivel);
+                    psInsert.setString(4, etapa);
+                    psInsert.executeUpdate();
+                    mensaje = "✅ Datos registrados correctamente.";
+                    accion = "Registro inicial de datos musicales del estudiante";
+                }
+            }
+
+            // 📝 Bitácora institucional
+            BitacoraDAO bitacoraDAO = new BitacoraDAO(con);
+            bitacoraDAO.registrarAccion(accion + " (ID: " + id + ")", nombre, rol, "Estudiantes");
+
+            // 🛡️ Auditoría técnica
+            Map<String, String> registro = new HashMap<>();
+            registro.put("usuario", nombre);
+            registro.put("rol", rol);
+            registro.put("modulo", "Estudiantes");
+            registro.put("accion", accion + " (ID: " + id + ")");
+            new AuditoriaDAO(con).registrarAccion(registro);
+
+            con.commit(); // ✅ Confirmar transacción
 
             // Obtener datos actualizados
             String sqlDatos = "SELECT u.id_usuario, u.nombre, e.instrumento, e.nivel_tecnico, e.etapa " +
@@ -99,8 +127,8 @@ public class EditarEstudianteServlet extends HttpServlet {
 
         } catch (SQLException e) {
             e.printStackTrace();
-            request.setAttribute("mensaje", "❌ Error al actualizar los datos: " + e.getMessage());
-            request.getRequestDispatcher("/docente/gestionarEstudiantes.jsp").forward(request, response);
+            sesion.setAttribute("mensaje", "❌ Error al actualizar los datos: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/GestionarEstudiantesServlet");
         }
     }
 
