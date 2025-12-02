@@ -45,9 +45,20 @@ public class VerTablasDocenteServlet extends HttpServlet {
         try (Connection conn = Conexion.getConnection()) {
             TablasNotasDAO dao = new TablasNotasDAO(conn);
             tablas = dao.listarTablasPorDocente(idDocente);
+
+            if (tablas == null || tablas.isEmpty()) {
+                request.setAttribute("mensaje", "⚠️ No se pudo enviar la tabla. Verifique que tenga notas registradas.");
+                request.setAttribute("tipoMensaje", "warning");
+            } else {
+                request.setAttribute("mensaje", "✔ Tablas cargadas correctamente.");
+                request.setAttribute("tipoMensaje", "success");
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             sesion.setAttribute("mensaje", "❌ Error al cargar tablas: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/error.jsp");
+            return;
         }
 
         request.setAttribute("tablas", tablas);

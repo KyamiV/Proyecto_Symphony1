@@ -50,15 +50,9 @@ public class CargarNotasServlet extends HttpServlet {
         procesarSolicitud(request, response);
     }
 
-    /**
-     * Método central que procesa tanto GET como POST.
-     * Valida sesión, carga datos de clase y estudiantes, registra trazabilidad y
-     * envía la información a la vista registrarNotas.jsp.
-     */
     private void procesarSolicitud(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // 🔹 1. Validación de sesión y rol
         HttpSession sesion = request.getSession(false);
         String rol = (sesion != null) ? (String) sesion.getAttribute("rolActivo") : null;
         Integer idDocente = (sesion != null) ? (Integer) sesion.getAttribute("idActivo") : null;
@@ -67,56 +61,44 @@ public class CargarNotasServlet extends HttpServlet {
         if (rol == null || !"docente".equalsIgnoreCase(rol) || idDocente == null) {
             request.setAttribute("tipoMensaje", "danger");
             request.setAttribute("mensaje", "❌ Acceso restringido: requiere rol docente.");
-            request.getRequestDispatcher("/error.jsp").forward(request, response);
+            request.getRequestDispatcher("/fragmentos/error.jsp").forward(request, response);
             return;
         }
 
-        // 🔹 2. Validar parámetro claseId
         String claseIdStr = request.getParameter("claseId");
-
-        // Si no viene en request, intentar recuperar de sesión
         if (claseIdStr == null || claseIdStr.isEmpty()) {
             claseIdStr = (sesion != null && sesion.getAttribute("claseId") != null)
                          ? sesion.getAttribute("claseId").toString()
                          : null;
         }
 
-        // Si sigue siendo nulo → error institucional
         if (claseIdStr == null || claseIdStr.isEmpty()) {
             request.setAttribute("tipoMensaje", "warning");
             request.setAttribute("mensaje", "⚠️ Clase no especificada.");
-            request.getRequestDispatcher("/error.jsp").forward(request, response);
+            request.getRequestDispatcher("/fragmentos/error.jsp").forward(request, response);
             return;
         }
 
-        // Convertir a entero
         int claseId;
         try {
             claseId = Integer.parseInt(claseIdStr);
         } catch (NumberFormatException e) {
             request.setAttribute("tipoMensaje", "danger");
             request.setAttribute("mensaje", "⚠️ Clase no válida.");
-            request.getRequestDispatcher("/error.jsp").forward(request, response);
+            request.getRequestDispatcher("/fragmentos/error.jsp").forward(request, response);
             return;
         }
 
-        // Guardar en sesión para futuros redirects
         sesion.setAttribute("claseId", claseId);
-
-        // También guardar en request para el JSP actual
         request.setAttribute("claseId", claseId);
 
         try (Connection conn = Conexion.getConnection()) {
-            // 🔹 3. DAOs para obtener datos
             NotaDAO notaDAO = new NotaDAO(conn);
             ClaseDAO claseDAO = new ClaseDAO(conn);
 
-            // Estudiantes inscritos en la clase (modelo Estudiante)
             List<Estudiante> estudiantes = notaDAO.obtenerEstudiantesPorClase(claseId);
-            // Notas ya registradas en la clase
             List<Nota> notas = notaDAO.obtenerNotasPorClase(claseId);
 
-            // Datos de la clase
             Map<String, String> datosClase = claseDAO.obtenerDatosClase(claseId);
             String nombreClase = datosClase.getOrDefault("nombre", "Sin nombre");
             String aula = datosClase.getOrDefault("aula", "Sin aula");
@@ -124,7 +106,6 @@ public class CargarNotasServlet extends HttpServlet {
                              (datosClase.get("inicio") != null ? datosClase.get("inicio") : "") + " - " +
                              (datosClase.get("fin") != null ? datosClase.get("fin") : "");
 
-            // 🔹 4. Mensajes institucionales (se trasladan de sesión a request)
             Object mensaje = sesion.getAttribute("mensaje");
             Object tipoMensaje = sesion.getAttribute("tipoMensaje");
             if (mensaje != null) {
@@ -134,12 +115,10 @@ public class CargarNotasServlet extends HttpServlet {
                 sesion.removeAttribute("tipoMensaje");
             }
 
-            // 🔹 5. Registro en Bitácora institucional
             new BitacoraDAO(conn).registrarAccion(
                     "Docente accedió a registrar notas en clase " + nombreClase,
                     nombreDocente, rol, "Notas por clase");
 
-            // 🔹 6. Registro en Auditoría institucional
             Map<String, String> registro = new HashMap<>();
             registro.put("usuario", String.valueOf(idDocente));
             registro.put("rol", rol);
@@ -148,7 +127,6 @@ public class CargarNotasServlet extends HttpServlet {
             registro.put("ip_origen", request.getRemoteAddr());
             new AuditoriaDAO(conn).registrarAccion(registro);
 
-            // 🔹 7. Enviar datos a la vista JSP
             request.setAttribute("estudiantes", estudiantes);
             request.setAttribute("notas", notas);
             request.setAttribute("nombreClase", nombreClase);
@@ -156,15 +134,13 @@ public class CargarNotasServlet extends HttpServlet {
             request.setAttribute("horario", horario);
 
         } catch (Exception e) {
-            // Manejo de errores
             e.printStackTrace();
             request.setAttribute("tipoMensaje", "danger");
             request.setAttribute("mensaje", "❌ Error al cargar datos de clase: " + e.getMessage());
-            request.getRequestDispatcher("/error.jsp").forward(request, response);
+            request.getRequestDispatcher("/fragmentos/error.jsp").forward(request, response);
             return;
         }
 
-        // 🔹 8. Forward a la vista registrarNotas.jsp
         RequestDispatcher dispatcher = request.getRequestDispatcher("/docente/registrarNotas.jsp");
         dispatcher.forward(request, response);
     }

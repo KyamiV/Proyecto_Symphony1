@@ -71,7 +71,7 @@ public class NotaDAO {
 }
 
     // Obtener notas por clase con todos los campos de la tabla notas_clase
-public List<Nota> obtenerNotasPorClase(int claseId) {
+    public List<Nota> obtenerNotasPorClase(int claseId) {
     List<Nota> lista = new ArrayList<>();
     String sql = "SELECT n.id_nota, n.id_estudiante, n.id_docente, n.id_tabla, n.id_clase, " +
                  "       CONCAT(u.nombre, ' ', u.apellido) AS nombre_estudiante, " +
@@ -96,9 +96,10 @@ public List<Nota> obtenerNotasPorClase(int claseId) {
                 nota.setIdDocente(rs.getInt("id_docente"));
                 nota.setIdClase(rs.getInt("id_clase"));
 
+                // id_tabla con control de null
                 int idTabla = rs.getInt("id_tabla");
                 if (!rs.wasNull()) {
-                    nota.setIdTabla(idTabla); // asegúrate de tener este setter en tu modelo
+                    nota.setIdTabla(idTabla); // asegúrate de tener este setter en tu modelo Nota
                 }
 
                 // Datos descriptivos
@@ -132,7 +133,6 @@ public List<Nota> obtenerNotasPorClase(int claseId) {
     }
     return lista;
 }
-
     // Contar notas registradas por docente
 public int contarNotasRegistradas(int docenteId) {
     String sql = "SELECT COUNT(*) AS total " +
@@ -671,6 +671,35 @@ public boolean existeEstudiante(int estudianteId) {
         System.err.println("❌ Error al verificar existencia de estudiante (id=" + estudianteId + "): " + e.getMessage());
         return false;
     }
+}
+public boolean existenNotasPorTabla(int tablaId) {
+    String sql = "SELECT COUNT(*) FROM notas_clase WHERE id_tabla = ?";
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, tablaId);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("❌ Error al verificar notas por tabla: " + e.getMessage());
+    }
+    return false;
+}
+
+public int contarNotasPorTabla(int tablaId) {
+    String sql = "SELECT COUNT(*) FROM notas_clase WHERE id_tabla = ?";
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, tablaId);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("❌ Error al contar notas por tabla: " + e.getMessage());
+    }
+    return 0;
 }
 
 }

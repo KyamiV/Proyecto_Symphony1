@@ -4,6 +4,7 @@
  */
 
 package com.mysymphony.proyecto_symphony1.servlet;
+
 /**
  * Servlet para enviar una tabla institucional de notas al administrador con trazabilidad.
  * Rol: docente
@@ -17,12 +18,17 @@ package com.mysymphony.proyecto_symphony1.servlet;
 
 import com.mysymphony.proyecto_symphony1.util.Conexion;
 import com.mysymphony.proyecto_symphony1.dao.TablasNotasDAO;
+import com.mysymphony.proyecto_symphony1.dao.NotaDAO;
+import com.mysymphony.proyecto_symphony1.dao.BitacoraDAO;
+import com.mysymphony.proyecto_symphony1.dao.AuditoriaDAO;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.sql.Connection;
+import java.util.HashMap;
+import java.util.Map;
 
 @WebServlet("/EnviarNotasAdminServlet")
 public class EnviarNotasAdminServlet extends HttpServlet {
@@ -40,6 +46,9 @@ public class EnviarNotasAdminServlet extends HttpServlet {
 
         // Validar que el docente esté en sesión
         Integer idDocente = (Integer) sesion.getAttribute("idActivo");
+        String nombreDocente = (String) sesion.getAttribute("nombreActivo");
+        String rol = (String) sesion.getAttribute("rolActivo");
+
         if (idDocente == null) {
             sesion.setAttribute("mensaje", "❌ No se encontró el docente en sesión.");
             response.sendRedirect(request.getContextPath() + "/VerTablasDocenteServlet");
@@ -63,19 +72,43 @@ public class EnviarNotasAdminServlet extends HttpServlet {
             return;
         }
 
-        boolean enviado = false;
         try (Connection conn = Conexion.getConnection()) {
-            TablasNotasDAO dao = new TablasNotasDAO(conn);
-            enviado = dao.marcarTablaComoEnviada(tablaId, idDocente);
+            TablasNotasDAO tablasDAO = new TablasNotasDAO(conn);
+            NotaDAO notaDAO = new NotaDAO(conn);
+
+            // Contar notas asociadas a la tabla
+            int cantidadNotas = notaDAO.contarNotasPorTabla(tablaId);
+
+            if (cantidadNotas == 0) {
+                sesion.setAttribute("mensaje", "⚠️ La tabla no tiene notas registradas.");
+            } else {
+                boolean enviado = tablasDAO.marcarTablaComoEnviada(tablaId, idDocente);
+                if (enviado) {
+                    sesion.setAttribute("mensaje", "✅ La tabla fue enviada correctamente al administrador con "
+                            + cantidadNotas + " notas registradas.");
+
+                    // 📖 Bitácora institucional
+                    new BitacoraDAO(conn).registrarAccion(
+                        "Docente envió tabla " + tablaId + " al administrador con " + cantidadNotas + " notas",
+                        nombreDocente, rol, "Envío de tablas"
+                    );
+
+                    // 🛡️ Auditoría institucional
+                    Map<String, String> registro = new HashMap<>();
+                    registro.put("usuario", nombreDocente + " (ID: " + idDocente + ")");
+                    registro.put("rol", rol);
+                    registro.put("modulo", "Envío de tablas");
+                    registro.put("accion", "Envió tabla " + tablaId + " al administrador con " + cantidadNotas + " notas");
+                    registro.put("ip_origen", request.getRemoteAddr());
+                    new AuditoriaDAO(conn).registrarAccion(registro);
+
+                } else {
+                    sesion.setAttribute("mensaje", "⚠️ No se pudo enviar la tabla.");
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
             sesion.setAttribute("mensaje", "❌ Error al enviar la tabla: " + e.getMessage());
-        }
-
-        if (enviado) {
-            sesion.setAttribute("mensaje", "✅ La tabla fue enviada correctamente al administrador.");
-        } else {
-            sesion.setAttribute("mensaje", "⚠️ No se pudo enviar la tabla. Verifique que tenga notas registradas.");
         }
 
         response.sendRedirect(request.getContextPath() + "/VerTablasDocenteServlet");

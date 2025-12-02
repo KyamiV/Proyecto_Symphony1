@@ -97,56 +97,60 @@
 
         <!-- 📊 Tabla de notas -->
         <c:choose>
-            <c:when test="${not empty notas}">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover tabla-notas">
-                        <thead class="table-success text-white">
-                            <tr>
-                                <th>ID Clase</th>
-                                <th>Estudiante</th>
-                                <th>Competencia</th>
-                                <th>Nota</th>
-                                <th>Observación</th>
-                                <th>Fecha</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <c:forEach var="nota" items="${notas}">
-                                <tr>
-                                    <form method="post" action="${pageContext.request.contextPath}/EditarNotaClaseServlet">
-                                        <td>${claseId}</td>
-                                        <td>${nota.estudiante}</td>
-                                        <td><input type="text" name="competencia" value="${nota.competencia}" class="form-control form-control-sm text-center" required /></td>
-                                        <td><input type="number" name="nota" step="0.1" min="0" max="5" value="${nota.nota}" class="form-control form-control-sm text-center" required /></td>
-                                        <td><input type="text" name="observacion" value="${nota.observacion}" class="form-control form-control-sm text-center" /></td>
-                                        <td>${nota.fecha}<input type="hidden" name="fecha" value="${nota.fecha}" /></td>
-                                        <td class="text-center d-flex justify-content-center gap-2">
-                                            <input type="hidden" name="notaId" value="${nota.id}" />
-                                            <input type="hidden" name="claseId" value="${claseId}" />
-                                            <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-save"></i></button>
-                                    </form>
-                                    <form method="post" action="${pageContext.request.contextPath}/EliminarNotaClaseServlet">
-                                        <input type="hidden" name="notaId" value="${nota.id}" />
-                                        <input type="hidden" name="claseId" value="${claseId}" />
-                                        <button type="submit" class="btn btn-danger btn-sm"
-                                                onclick="return confirm('¿Eliminar esta nota?')">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </form>
-                                    </td>
-                                </tr>
-                            </c:forEach>
-                        </tbody>
-                    </table>
-                </div>
-            </c:when>
-            <c:otherwise>
-                <div class="alert alert-warning text-center">
-                    <i class="fas fa-exclamation-triangle"></i> No hay notas registradas para esta clase.
-                </div>
-            </c:otherwise>
-        </c:choose>
+    <c:when test="${not empty notas}">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover tabla-notas">
+                <thead class="table-success text-white">
+                    <tr>
+                        <th>ID Clase</th>
+                        <th>ID Tabla</th>
+                        <th>Estudiante</th>
+                        <th>Competencia</th>
+                        <th>Nota</th>
+                        <th>Observación</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <c:forEach var="nota" items="${notas}">
+                        <tr>
+                            <form method="post" action="${pageContext.request.contextPath}/EditarNotaClaseServlet">
+                                <td>${claseId}</td>
+                                <td>${nota.idTabla}</td>
+                                <td>${nota.estudiante}</td>
+                                <td><input type="text" name="competencia" value="${nota.competencia}" class="form-control form-control-sm text-center" required /></td>
+                                <td><input type="number" name="nota" step="0.1" min="0" max="5" value="${nota.nota}" class="form-control form-control-sm text-center" required /></td>
+                                <td><input type="text" name="observacion" value="${nota.observacion}" class="form-control form-control-sm text-center" /></td>
+                                <td>${nota.fecha}<input type="hidden" name="fecha" value="${nota.fecha}" /></td>
+                                <td class="text-center d-flex justify-content-center gap-2">
+                                    <input type="hidden" name="notaId" value="${nota.id}" />
+                                    <input type="hidden" name="claseId" value="${claseId}" />
+                                    <input type="hidden" name="idTabla" value="${nota.idTabla}" />
+                                    <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-save"></i></button>
+                            </form>
+                            <form method="post" action="${pageContext.request.contextPath}/EliminarNotaClaseServlet">
+                                <input type="hidden" name="notaId" value="${nota.id}" />
+                                <input type="hidden" name="claseId" value="${claseId}" />
+                                <input type="hidden" name="idTabla" value="${nota.idTabla}" />
+                                <button type="submit" class="btn btn-danger btn-sm"
+                                        onclick="return confirm('¿Eliminar esta nota?')">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                                </td>
+                        </tr>
+                    </c:forEach>
+                </tbody>
+            </table>
+        </div>
+    </c:when>
+    <c:otherwise>
+        <div class="alert alert-warning text-center">
+            <i class="fas fa-exclamation-triangle"></i> No hay notas registradas para esta clase.
+        </div>
+    </c:otherwise>
+</c:choose>
 
         <!-- 🔙 Botones globales -->
         <div class="mt-4 text-center">
@@ -177,7 +181,7 @@
             <label class="form-label">Estudiante</label>
             <select name="idEstudiante" class="form-select" required>
               <option value="">Seleccione estudiante</option>
-                            <c:forEach var="est" items="${estudiantes}">
+              <c:forEach var="est" items="${estudiantes}">
                 <option value="${est.idEstudiante}">
                   ${est.nombre} ${est.apellido} - ${est.instrumento} (${est.etapaPedagogica})
                 </option>
@@ -213,6 +217,7 @@
           <input type="hidden" name="claseId" value="${claseId}">
           <input type="hidden" name="instrumento" value="${instrumento}">
           <input type="hidden" name="etapa" value="${etapa}">
+          <input type="hidden" name="idTabla" value="${nota.idTabla}">
         </div>
 
         <div class="modal-footer">
@@ -227,7 +232,6 @@
     </div>
   </div>
 </div>
-
 <!-- Modal para guardar tabla institucional -->
 <div class="modal fade" id="guardarTablaModal" tabindex="-1" aria-labelledby="guardarTablaLabel" aria-hidden="true">
   <div class="modal-dialog modal-sm modal-dialog-centered">
@@ -241,6 +245,7 @@
         </div>
         <div class="modal-body">
           <input type="hidden" name="claseId" value="${claseId}">
+          <input type="hidden" name="idTabla" value="${nota.idTabla}">
           <div class="mb-3">
             <label class="form-label"><i class="fas fa-heading"></i> Nombre de la tabla</label>
             <input type="text" name="nombreTabla" class="form-control" placeholder="Ej: Tabla de notas 1" required>

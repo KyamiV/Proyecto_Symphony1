@@ -6,7 +6,7 @@ package com.mysymphony.proyecto_symphony1.servlet;
 
 /**
  * Servlet para eliminar una tabla institucional de notas
- * Rol: docente
+ * Rol: docente / administrador
  * Autor: Camila
  * Trazabilidad:
  *   - Valida sesión y rol
@@ -30,8 +30,8 @@ import java.util.Map;
 @WebServlet("/EliminarTablaServlet")
 public class EliminarTablaServlet extends HttpServlet {
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    // Método común para GET y POST
+    private void procesar(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         HttpSession sesion = request.getSession(false);
@@ -44,7 +44,7 @@ public class EliminarTablaServlet extends HttpServlet {
             (!"docente".equalsIgnoreCase(rol) && !"administrador".equalsIgnoreCase(rol))) {
             request.setAttribute("mensaje", "⚠️ Acceso restringido: requiere rol docente o administrador.");
             request.setAttribute("tipoMensaje", "danger");
-            request.getRequestDispatcher("/error.jsp").forward(request, response);
+            request.getRequestDispatcher("/fragmentos/error.jsp").forward(request, response);
             return;
         }
 
@@ -54,7 +54,7 @@ public class EliminarTablaServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             request.setAttribute("mensaje", "⚠️ ID de tabla inválido.");
             request.setAttribute("tipoMensaje", "danger");
-            request.getRequestDispatcher("/error.jsp").forward(request, response);
+            request.getRequestDispatcher("/fragmentos/error.jsp").forward(request, response);
             return;
         }
 
@@ -95,8 +95,10 @@ public class EliminarTablaServlet extends HttpServlet {
 
                     // 📖 Bitácora
                     BitacoraDAO bitacoraDAO = new BitacoraDAO(conn);
-                    bitacoraDAO.registrarAccion(rol + " eliminó tabla institucional ID " + tablaId,
-                            usuario, rol, "Tablas guardadas");
+                    bitacoraDAO.registrarAccion(
+                            rol + " eliminó tabla institucional ID " + tablaId,
+                            usuario, rol, "Tablas guardadas"
+                    );
 
                     conn.commit();
                     request.setAttribute("mensaje", "✔ Tabla eliminada correctamente.");
@@ -112,7 +114,7 @@ public class EliminarTablaServlet extends HttpServlet {
             e.printStackTrace();
             request.setAttribute("mensaje", "❌ Error al eliminar la tabla: " + e.getMessage());
             request.setAttribute("tipoMensaje", "danger");
-            request.getRequestDispatcher("/error.jsp").forward(request, response);
+            request.getRequestDispatcher("/fragmentos/error.jsp").forward(request, response);
             return;
         }
 
@@ -122,5 +124,17 @@ public class EliminarTablaServlet extends HttpServlet {
         } else {
             request.getRequestDispatcher("/VerTablasDocenteServlet").forward(request, response);
         }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        procesar(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        procesar(request, response);
     }
 }

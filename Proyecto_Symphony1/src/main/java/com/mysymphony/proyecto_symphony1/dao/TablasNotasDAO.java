@@ -119,17 +119,19 @@ public class TablasNotasDAO {
 
     // 🔹 Marcar tabla como enviada con trazabilidad
     public boolean marcarTablaComoEnviada(int tablaId, int idDocente) {
-        String sql = "UPDATE tablas_guardadas SET enviada = TRUE, enviada_por = ?, fecha_envio = CURRENT_DATE WHERE id = ?";
+    String sql = "UPDATE tablas_guardadas " +
+                 "SET enviada = 'Sí', enviada_por = ?, fecha_envio = CURRENT_DATE " +
+                 "WHERE id = ?";
 
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, idDocente);
-            ps.setInt(2, tablaId);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            System.err.println("❌ Error al marcar tabla como enviada: " + e.getMessage());
-            return false;
-        }
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, idDocente);
+        ps.setInt(2, tablaId);
+        return ps.executeUpdate() > 0;
+    } catch (SQLException e) {
+        System.err.println("❌ Error al marcar tabla como enviada: " + e.getMessage());
+        return false;
     }
+}
 
     // 🔹 Consultar estado completo de una tabla
     public Map<String, String> obtenerEstadoTabla(int tablaId) {

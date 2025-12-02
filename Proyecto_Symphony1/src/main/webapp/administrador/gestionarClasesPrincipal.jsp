@@ -239,6 +239,7 @@
     </button>
 </div>
 
+<%-- Esta Sección aún no completa
 <!-- 📜 Certificados emitidos -->
 <h3 id="certificadosEmitidos" class="mt-5 mb-3">
     <i class="fas fa-file-alt"></i> Certificados emitidos
@@ -299,6 +300,7 @@
         </tbody>
     </table>
 </div>
+--%>
 
 <!-- 🔙 Botón institucional -->
 <div class="text-end mt-4">
