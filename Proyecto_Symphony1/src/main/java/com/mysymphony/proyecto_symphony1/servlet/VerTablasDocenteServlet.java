@@ -22,7 +22,7 @@ import java.util.Map;
  * Autor: Camila
  * Trazabilidad:
  *   - Valida sesión y rol
- *   - Consulta tablas guardadas en BD
+ *   - Consulta tablas guardadas en BD (incluye clase, instrumento, etapa y horario)
  *   - Envía resultados al JSP verTablas.jsp
  */
 @WebServlet("/VerTablasDocenteServlet")
@@ -44,23 +44,13 @@ public class VerTablasDocenteServlet extends HttpServlet {
 
         try (Connection conn = Conexion.getConnection()) {
             TablasNotasDAO dao = new TablasNotasDAO(conn);
-            tablas = dao.listarTablasPorDocente(idDocente);
-
-            if (tablas == null || tablas.isEmpty()) {
-                request.setAttribute("mensaje", "⚠️ No se pudo enviar la tabla. Verifique que tenga notas registradas.");
-                request.setAttribute("tipoMensaje", "warning");
-            } else {
-                request.setAttribute("mensaje", "✔ Tablas cargadas correctamente.");
-                request.setAttribute("tipoMensaje", "success");
-            }
-
+            tablas = dao.listarTablasPorDocente(idDocente); // ✅ ahora incluye etapa y horario
         } catch (Exception e) {
             e.printStackTrace();
             sesion.setAttribute("mensaje", "❌ Error al cargar tablas: " + e.getMessage());
-            response.sendRedirect(request.getContextPath() + "/error.jsp");
-            return;
         }
 
+        // 🔹 Pasar las tablas al JSP
         request.setAttribute("tablas", tablas);
         request.getRequestDispatcher("/docente/verTablas.jsp").forward(request, response);
     }

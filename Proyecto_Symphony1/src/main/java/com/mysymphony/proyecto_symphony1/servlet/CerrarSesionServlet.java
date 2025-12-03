@@ -5,8 +5,13 @@
 package com.mysymphony.proyecto_symphony1.servlet;
 
 /**
- *
- * @author camiv
+ * Servlet para cerrar sesión con mensaje institucional de confirmación.
+ * Rol: Docente / Estudiante
+ * Autor: Camila
+ * Trazabilidad:
+ *   - Invalida sesión activa
+ *   - Redirige al login
+ *   - Muestra mensaje institucional de cierre exitoso
  */
 
 import javax.servlet.*;
@@ -19,10 +24,14 @@ public class CerrarSesionServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         HttpSession session = request.getSession(false); // No crea nueva sesión si no existe
         if (session != null) {
             session.invalidate(); // Elimina la sesión actual
         }
-        response.sendRedirect("login.jsp"); // Redirige al login
+
+        // Guardar mensaje en request para mostrar en login.jsp
+        request.setAttribute("mensaje", "✅ Sesión cerrada exitosamente. ¡Hasta pronto!");
+        request.getRequestDispatcher("login.jsp").forward(request, response);
     }
 }

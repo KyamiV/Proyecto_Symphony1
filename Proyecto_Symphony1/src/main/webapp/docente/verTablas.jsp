@@ -52,6 +52,7 @@
             <thead class="table-dark">
                 <tr>
                     <th>Clase</th>
+                    <th>Instrumento</th>
                     <th>Nombre tabla</th>
                     <th>Descripción</th>
                     <th>Fecha</th>
@@ -64,6 +65,7 @@
                        for (Map<String,String> tabla : tablas) { %>
                 <tr>
                     <td><%= tabla.get("clase") %></td>
+                    <td><%= tabla.get("instrumento") %></td>
                     <td><%= tabla.get("nombre") %></td>
                     <td><%= tabla.get("descripcion") %></td>
                     <td><%= tabla.get("fecha") %></td>
@@ -101,7 +103,7 @@
                 </tr>
                 <% } } else { %>
                 <tr>
-                    <td colspan="6" class="text-center">No hay tablas registradas.</td>
+                    <td colspan="7" class="text-center">No hay tablas registradas.</td>
                 </tr>
                 <% } %>
             </tbody>

@@ -11,14 +11,13 @@ package com.mysymphony.proyecto_symphony1.servlet;
  * Autor: Camila
  * Trazabilidad:
  *   - Valida sesión
- *   - Verifica notas y estado
+ *   - Verifica estado
  *   - Marca como enviada
  *   - Registra acción en bitácora y auditoría institucional
  */
 
 import com.mysymphony.proyecto_symphony1.util.Conexion;
 import com.mysymphony.proyecto_symphony1.dao.TablasNotasDAO;
-import com.mysymphony.proyecto_symphony1.dao.NotaDAO;
 import com.mysymphony.proyecto_symphony1.dao.BitacoraDAO;
 import com.mysymphony.proyecto_symphony1.dao.AuditoriaDAO;
 
@@ -74,37 +73,29 @@ public class EnviarNotasAdminServlet extends HttpServlet {
 
         try (Connection conn = Conexion.getConnection()) {
             TablasNotasDAO tablasDAO = new TablasNotasDAO(conn);
-            NotaDAO notaDAO = new NotaDAO(conn);
 
-            // Contar notas asociadas a la tabla
-            int cantidadNotas = notaDAO.contarNotasPorTabla(tablaId);
+            // 🔹 Marcar tabla como enviada directamente
+            boolean enviado = tablasDAO.marcarTablaComoEnviada(tablaId, idDocente);
+            if (enviado) {
+                sesion.setAttribute("mensaje", "✅ La tabla fue enviada correctamente al administrador.");
 
-            if (cantidadNotas == 0) {
-                sesion.setAttribute("mensaje", "⚠️ La tabla no tiene notas registradas.");
+                // 📖 Bitácora institucional
+                new BitacoraDAO(conn).registrarAccion(
+                    "Docente envió tabla " + tablaId + " al administrador",
+                    nombreDocente, rol, "Envío de tablas"
+                );
+
+                // 🛡️ Auditoría institucional
+                Map<String, String> registro = new HashMap<>();
+                registro.put("usuario", nombreDocente + " (ID: " + idDocente + ")");
+                registro.put("rol", rol);
+                registro.put("modulo", "Envío de tablas");
+                registro.put("accion", "Envió tabla " + tablaId + " al administrador");
+                registro.put("ip_origen", request.getRemoteAddr());
+                new AuditoriaDAO(conn).registrarAccion(registro);
+
             } else {
-                boolean enviado = tablasDAO.marcarTablaComoEnviada(tablaId, idDocente);
-                if (enviado) {
-                    sesion.setAttribute("mensaje", "✅ La tabla fue enviada correctamente al administrador con "
-                            + cantidadNotas + " notas registradas.");
-
-                    // 📖 Bitácora institucional
-                    new BitacoraDAO(conn).registrarAccion(
-                        "Docente envió tabla " + tablaId + " al administrador con " + cantidadNotas + " notas",
-                        nombreDocente, rol, "Envío de tablas"
-                    );
-
-                    // 🛡️ Auditoría institucional
-                    Map<String, String> registro = new HashMap<>();
-                    registro.put("usuario", nombreDocente + " (ID: " + idDocente + ")");
-                    registro.put("rol", rol);
-                    registro.put("modulo", "Envío de tablas");
-                    registro.put("accion", "Envió tabla " + tablaId + " al administrador con " + cantidadNotas + " notas");
-                    registro.put("ip_origen", request.getRemoteAddr());
-                    new AuditoriaDAO(conn).registrarAccion(registro);
-
-                } else {
-                    sesion.setAttribute("mensaje", "⚠️ No se pudo enviar la tabla.");
-                }
+                sesion.setAttribute("mensaje", "⚠️ No se pudo enviar la tabla.");
             }
         } catch (Exception e) {
             e.printStackTrace();

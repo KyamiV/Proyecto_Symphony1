@@ -118,14 +118,14 @@ public class TablasNotasDAO {
     }
 
     // 🔹 Marcar tabla como enviada con trazabilidad
-    public boolean marcarTablaComoEnviada(int tablaId, int idDocente) {
+public boolean marcarTablaComoEnviada(int tablaId, int idDocente) {
     String sql = "UPDATE tablas_guardadas " +
-                 "SET enviada = 'Sí', enviada_por = ?, fecha_envio = CURRENT_DATE " +
-                 "WHERE id = ?";
-
+                 "SET enviada = TRUE, enviada_por = ?, fecha_envio = CURRENT_DATE " +
+                 "WHERE id = ? AND id_docente = ?";
     try (PreparedStatement ps = conn.prepareStatement(sql)) {
         ps.setInt(1, idDocente);
         ps.setInt(2, tablaId);
+        ps.setInt(3, idDocente);
         return ps.executeUpdate() > 0;
     } catch (SQLException e) {
         System.err.println("❌ Error al marcar tabla como enviada: " + e.getMessage());
@@ -157,14 +157,14 @@ public class TablasNotasDAO {
         return estado;
     }
 
-    // 🔹 Listar todas las tablas guardadas por un docente (versión extendida con validada)
-    public List<Map<String, String>> listarTablasPorDocente(int docenteId) {
+    // 🔹 Listar todas las tablas guardadas por un docente (con clase e instrumento)
+public List<Map<String, String>> listarTablasPorDocente(int docenteId) {
     List<Map<String, String>> tablas = new ArrayList<>();
 
     String sql = "SELECT t.id, t.nombre, t.descripcion, t.fecha, t.enviada, t.validada, " +
-                 "c.id_clase, c.nombre AS clase " +   // ✅ ahora usa id_clase
+                 "c.id_clase, c.nombre_clase AS clase, c.instrumento " +
                  "FROM tablas_guardadas t " +
-                 "JOIN clases c ON t.id_clase = c.id_clase " +  // ✅ corregido
+                 "JOIN clases c ON t.id_clase = c.id_clase " +
                  "WHERE t.id_docente = ? " +
                  "ORDER BY t.fecha DESC";
 
@@ -180,8 +180,9 @@ public class TablasNotasDAO {
                 tabla.put("fecha", rs.getString("fecha"));
                 tabla.put("enviada", rs.getBoolean("enviada") ? "Sí" : "No");
                 tabla.put("validada", rs.getString("validada"));
-                tabla.put("id_clase", String.valueOf(rs.getInt("id_clase"))); // ✅ agregado
-                tabla.put("clase", rs.getString("clase"));
+                tabla.put("id_clase", String.valueOf(rs.getInt("id_clase")));
+                tabla.put("clase", rs.getString("clase"));          // ✅ nombre_clase
+                tabla.put("instrumento", rs.getString("instrumento")); // ✅ instrumento
                 tablas.add(tabla);
             }
         }
@@ -191,4 +192,20 @@ public class TablasNotasDAO {
 
     return tablas;
 }
+    
+    public boolean estaTablaYaEnviada(int tablaId) {
+    String sql = "SELECT enviada FROM tablas_guardadas WHERE id = ?";
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, tablaId);
+        try (ResultSet rs = ps.executeQuery()) {
+            return rs.next() && rs.getBoolean("enviada");
+        }
+    } catch (SQLException e) {
+        System.err.println("❌ Error al verificar si la tabla ya fue enviada: " + e.getMessage());
+    }
+    return false;
+}
+    
+    
+    
 }
