@@ -40,7 +40,22 @@
 <div class="container mt-5">
     <h3 class="text-center mb-4"><i class="fas fa-calendar-alt"></i> Gestión de horarios de clases</h3>
 
-    <%-- 🧾 Mensaje de error si existe --%>
+    <%-- 🧾 Mensajes institucionales desde sesión --%>
+    <%
+        String mensaje = (String) session.getAttribute("mensaje");
+        String tipoMensaje = (String) session.getAttribute("tipoMensaje");
+        if (mensaje != null) {
+    %>
+        <div class="alert alert-<%= tipoMensaje %> text-center">
+            <%= mensaje %>
+        </div>
+    <%
+            session.removeAttribute("mensaje");
+            session.removeAttribute("tipoMensaje");
+        }
+    %>
+
+    <%-- 🧾 Mensaje de error si existe en request --%>
     <% if (error != null) { %>
         <div class="alert alert-danger text-center"><%= error %></div>
     <% } %>
@@ -48,7 +63,7 @@
     <%-- 🔍 Selector de clase --%>
     <form method="get" action="<%= request.getContextPath() %>/GestionarHorariosServlet" class="mb-4">
         <label class="form-label">Seleccionar clase</label>
-        <select name="clase" class="form-select" onchange="this.form.submit()">
+        <select name="id_clase" class="form-select" onchange="this.form.submit()">
             <option value="">-- Selecciona una clase --</option>
             <% for (Map<String, String> c : clases) {
                 String idClase = c.get("id_clase");
@@ -64,7 +79,7 @@
     <%-- 🧩 Formulario de registro de horario por clase --%>
     <% if (claseSeleccionada != null && !claseSeleccionada.isEmpty()) { %>
         <form method="post" action="<%= request.getContextPath() %>/GestionarHorariosServlet">
-            <input type="hidden" name="clase_id" value="<%= claseSeleccionada %>">
+            <input type="hidden" name="id_clase" value="<%= claseSeleccionada %>">
             <div class="row g-3">
                 <div class="col-md-2">
                     <label class="form-label">Día</label>
@@ -120,7 +135,7 @@
                             <tr>
                                 <form method="post" action="<%= request.getContextPath() %>/GestionarHorariosServlet">
                                     <input type="hidden" name="id_horario" value="<%= h.get("id_horario") %>">
-                                    <input type="hidden" name="clase_id" value="<%= claseSeleccionada %>">
+                                    <input type="hidden" name="id_clase" value="<%= claseSeleccionada %>">
 
                                     <td>
                                         <select name="dia" class="form-select form-select-sm">

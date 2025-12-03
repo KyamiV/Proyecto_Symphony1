@@ -72,7 +72,7 @@ public class AuditoriaDAO {
     // Ejemplo simple de paginación
 public List<Map<String, String>> obtenerAuditoriaPaginada(int pagina, int limite) {
     List<Map<String, String>> lista = new ArrayList<>();
-    String sql = "SELECT usuario, rol, accion, modulo, tabla, referencia_id, fecha_registro " +
+    String sql = "SELECT usuario, rol, accion, modulo, tabla, id_referencia, fecha_registro " +
                  "FROM auditoria ORDER BY fecha_registro DESC LIMIT ? OFFSET ?";
     int offset = (pagina - 1) * limite;
 
@@ -89,8 +89,8 @@ public List<Map<String, String>> obtenerAuditoriaPaginada(int pagina, int limite
             fila.put("rol", rs.getString("rol"));
             fila.put("accion", rs.getString("accion"));
             fila.put("modulo", rs.getString("modulo"));
-            fila.put("tabla_id", rs.getString("tabla_id"));
-            fila.put("referencia_id", rs.getString("referencia_id"));
+            fila.put("id_tabla", rs.getString("id_tabla"));
+            fila.put("id_referencia", rs.getString("id_referencia"));
             fila.put("fecha_registro", rs.getString("fecha_registro"));
             lista.add(fila);
         }
@@ -107,8 +107,8 @@ public List<Map<String, String>> obtenerAuditoriaPaginada(int pagina, int limite
         registro.put("rol", "administrador");
         registro.put("accion", descripcion);
         registro.put("modulo", modulo);
-        registro.put("tabla_id", null);
-        registro.put("referencia_id", null);
+        registro.put("id_tabla", null);
+        registro.put("id_referencia", null);
 
         registrarAccion(registro);
     }
@@ -152,7 +152,7 @@ public List<Map<String, String>> obtenerAuditoriaPaginada(int pagina, int limite
     // 🔹 Consultar todos los registros
     public List<Map<String, String>> obtenerTodos() {
         List<Map<String, String>> lista = new ArrayList<>();
-        String sql = "SELECT usuario, rol, accion, modulo, tabla_id, referencia_id, fecha_registro " +
+        String sql = "SELECT usuario, rol, accion, modulo, id_tabla, id_referencia, fecha_registro " +
                      "FROM auditoria ORDER BY fecha_registro DESC";
 
         try (Connection con = Conexion.getConnection();
@@ -165,8 +165,8 @@ public List<Map<String, String>> obtenerAuditoriaPaginada(int pagina, int limite
                 fila.put("rol", rs.getString("rol"));
                 fila.put("accion", rs.getString("accion"));
                 fila.put("modulo", rs.getString("modulo"));
-                fila.put("tabla_id", rs.getString("tabla_id"));
-                fila.put("referencia_id", rs.getString("referencia_id"));
+                fila.put("id_tabla", rs.getString("id_tabla"));
+                fila.put("id_referencia", rs.getString("id_referencia"));
                 fila.put("fecha_registro", rs.getString("fecha_registro"));
                 lista.add(fila);
             }
@@ -181,7 +181,7 @@ public List<Map<String, String>> obtenerAuditoriaPaginada(int pagina, int limite
     // 🔹 Filtrar por palabra clave
     public List<Map<String, String>> obtenerPorFiltro(String filtro) {
         List<Map<String, String>> lista = new ArrayList<>();
-        String sql = "SELECT usuario, rol, accion, modulo, tabla_id, referencia_id, fecha_registro " +
+        String sql = "SELECT usuario, rol, accion, modulo, id_tabla, id_referencia, fecha_registro " +
                      "FROM auditoria WHERE usuario LIKE ? OR accion LIKE ? OR modulo LIKE ? ORDER BY fecha_registro DESC";
 
         try (Connection con = Conexion.getConnection();
@@ -199,8 +199,8 @@ public List<Map<String, String>> obtenerAuditoriaPaginada(int pagina, int limite
                     fila.put("rol", rs.getString("rol"));
                     fila.put("accion", rs.getString("accion"));
                     fila.put("modulo", rs.getString("modulo"));
-                    fila.put("tabla_id", rs.getString("tabla_id"));
-                    fila.put("referencia_id", rs.getString("referencia_id"));
+                    fila.put("id_tabla", rs.getString("id_tabla"));
+                    fila.put("id_referencia", rs.getString("id_referencia"));
                     fila.put("fecha_registro", rs.getString("fecha_registro"));
                     lista.add(fila);
                 }
@@ -216,7 +216,7 @@ public List<Map<String, String>> obtenerAuditoriaPaginada(int pagina, int limite
     // 🔹 Filtrar por rango de fechas
     public List<Map<String, String>> obtenerPorRangoFechas(String inicio, String fin) {
         List<Map<String, String>> lista = new ArrayList<>();
-        String sql = "SELECT usuario, rol, accion, modulo, tabla_id, referencia_id, fecha_registro " +
+        String sql = "SELECT usuario, rol, accion, modulo, id_tabla, id_referencia, fecha_registro " +
                      "FROM auditoria WHERE fecha_registro BETWEEN ? AND ? ORDER BY fecha_registro DESC";
 
         try (Connection con = Conexion.getConnection();
@@ -232,8 +232,8 @@ public List<Map<String, String>> obtenerAuditoriaPaginada(int pagina, int limite
                 fila.put("rol", rs.getString("rol"));
                 fila.put("accion", rs.getString("accion"));
                 fila.put("modulo", rs.getString("modulo"));
-                fila.put("tabla_id", rs.getString("tabla_id"));
-                fila.put("referencia_id", rs.getString("referencia_id"));
+                fila.put("id_tabla", rs.getString("id_tabla"));
+                fila.put("id_referencia", rs.getString("id_referencia"));
                 fila.put("fecha_registro", rs.getString("fecha_registro"));
                 lista.add(fila);
             }
@@ -248,7 +248,7 @@ public List<Map<String, String>> obtenerAuditoriaPaginada(int pagina, int limite
     // 🔹 Filtrar por usuario
     public List<Map<String, String>> obtenerPorUsuario(String usuario) {
         List<Map<String, String>> lista = new ArrayList<>();
-        String sql = "SELECT usuario, rol, accion, modulo, tabla_id, referencia_id, fecha_registro " +
+        String sql = "SELECT usuario, rol, accion, modulo, id_tabla, id_referencia, fecha_registro " +
                      "FROM auditoria WHERE usuario = ? ORDER BY fecha_registro DESC";
 
         try (Connection con = Conexion.getConnection();
@@ -263,8 +263,8 @@ public List<Map<String, String>> obtenerAuditoriaPaginada(int pagina, int limite
                 fila.put("rol", rs.getString("rol"));
                 fila.put("accion", rs.getString("accion"));
                 fila.put("modulo", rs.getString("modulo"));
-                fila.put("tabla_id", rs.getString("tabla_id"));
-                fila.put("referencia_id", rs.getString("referencia_id"));
+                fila.put("id_tabla", rs.getString("id_tabla"));
+                fila.put("id_referencia", rs.getString("id_referencia"));
                 fila.put("fecha_registro", rs.getString("fecha_registro"));
                 lista.add(fila);
             }

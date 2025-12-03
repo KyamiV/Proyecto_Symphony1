@@ -41,7 +41,7 @@ public class GestionarHorariosServlet extends HttpServlet {
             return;
         }
 
-        String claseId = request.getParameter("clase");
+        String id_clase = request.getParameter("id_clase");
         List<Map<String, String>> clases = new ArrayList<>();
         List<Map<String, String>> horarios = new ArrayList<>();
 
@@ -60,19 +60,19 @@ public class GestionarHorariosServlet extends HttpServlet {
             }
 
             // 📅 Cargar horarios si hay clase seleccionada
-            if (claseId != null && !claseId.isEmpty()) {
+            if (id_clase != null && !id_clase.isEmpty()) {
                 try {
-                    int idClase = Integer.parseInt(claseId);
+                    int idClaseInt = Integer.parseInt(id_clase);
                     String sql = "SELECT id_horario, dia_semana, fecha, hora_inicio, hora_fin, aula " +
-                                 "FROM horarios_clase WHERE clase_id = ?";
+                                 "FROM horarios_clase WHERE id_clase = ?";
                     try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                        ps.setInt(1, idClase);
+                        ps.setInt(1, idClaseInt);
                         try (ResultSet rs = ps.executeQuery()) {
                             while (rs.next()) {
                                 Map<String, String> h = new HashMap<>();
                                 h.put("id_horario", rs.getString("id_horario"));
                                 h.put("dia", rs.getString("dia_semana"));
-                                h.put("fecha", rs.getString("fecha")); // ✅ fecha exacta
+                                h.put("fecha", rs.getString("fecha"));
                                 h.put("inicio", rs.getString("hora_inicio"));
                                 h.put("fin", rs.getString("hora_fin"));
                                 h.put("aula", rs.getString("aula"));
@@ -102,7 +102,7 @@ public class GestionarHorariosServlet extends HttpServlet {
         // 📤 Enviar datos a la vista
         request.setAttribute("clases", clases);
         request.setAttribute("horarios", horarios);
-        request.setAttribute("claseSeleccionada", claseId);
+        request.setAttribute("claseSeleccionada", id_clase);
         request.getRequestDispatcher("/administrador/gestionarHorarios.jsp").forward(request, response);
     }
 
@@ -110,14 +110,14 @@ public class GestionarHorariosServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession sesion = request.getSession();
-        String claseId = request.getParameter("clase_id");
+        String id_clase = request.getParameter("id_clase");
         String accion = request.getParameter("accion"); // puede ser "actualizar", "eliminar" o null (insertar)
         String idHorario = request.getParameter("id_horario");
 
         try (Connection conn = Conexion.getConnection()) {
             int filas = 0;
 
-            if ("eliminar".equalsIgnoreCase(accion) && idHorario != null) {
+            if ("eliminar".equalsIgnoreCase(accion) && idHorario != null && !idHorario.isEmpty()) {
                 // 🗑️ Eliminar horario
                 try (PreparedStatement ps = conn.prepareStatement("DELETE FROM horarios_clase WHERE id_horario = ?")) {
                     ps.setInt(1, Integer.parseInt(idHorario));
@@ -126,7 +126,7 @@ public class GestionarHorariosServlet extends HttpServlet {
                 sesion.setAttribute("mensaje", (filas > 0) ? "✔ Horario eliminado correctamente." : "❌ No se encontró el horario a eliminar.");
                 sesion.setAttribute("tipoMensaje", (filas > 0) ? "success" : "danger");
 
-            } else if ("actualizar".equalsIgnoreCase(accion) && idHorario != null) {
+            } else if ("actualizar".equalsIgnoreCase(accion) && idHorario != null && !idHorario.isEmpty()) {
                 // ✏️ Actualizar horario existente
                 String dia = request.getParameter("dia");
                 String fecha = request.getParameter("fecha");
@@ -147,7 +147,7 @@ public class GestionarHorariosServlet extends HttpServlet {
                 sesion.setAttribute("mensaje", (filas > 0) ? "✔ Horario actualizado correctamente." : "❌ No se pudo actualizar el horario.");
                 sesion.setAttribute("tipoMensaje", (filas > 0) ? "success" : "danger");
 
-            } else {
+            } else if (id_clase != null && !id_clase.isEmpty()) {
                 // ➕ Insertar nuevo horario por clase
                 String dia = request.getParameter("dia");
                 String fecha = request.getParameter("fecha");
@@ -155,9 +155,9 @@ public class GestionarHorariosServlet extends HttpServlet {
                 String fin = request.getParameter("hora_fin");
                 String aula = request.getParameter("aula");
 
-                String sql = "INSERT INTO horarios_clase (clase_id, dia_semana, fecha, hora_inicio, hora_fin, aula) VALUES (?, ?, ?, ?, ?, ?)";
+                String sql = "INSERT INTO horarios_clase (id_clase, dia_semana, fecha, hora_inicio, hora_fin, aula) VALUES (?, ?, ?, ?, ?, ?)";
                 try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                    ps.setInt(1, Integer.parseInt(claseId));
+                    ps.setInt(1, Integer.parseInt(id_clase));
                     ps.setString(2, dia);
                     ps.setDate(3, java.sql.Date.valueOf(fecha));
                     ps.setString(4, inicio);
@@ -167,6 +167,10 @@ public class GestionarHorariosServlet extends HttpServlet {
                 }
                 sesion.setAttribute("mensaje", (filas > 0) ? "✔ Horario registrado correctamente." : "❌ No se pudo registrar el horario.");
                 sesion.setAttribute("tipoMensaje", (filas > 0) ? "success" : "danger");
+
+            } else {
+                sesion.setAttribute("mensaje", "⚠️ Parámetros incompletos para gestionar horario.");
+                sesion.setAttribute("tipoMensaje", "warning");
             }
 
             // 📝 Registro en auditoría institucional
@@ -175,16 +179,16 @@ public class GestionarHorariosServlet extends HttpServlet {
             registro.put("usuario", (String) sesion.getAttribute("nombreActivo"));
             registro.put("rol", (String) sesion.getAttribute("rolActivo"));
             registro.put("modulo", "Horarios de clase");
-            registro.put("accion", (accion != null ? accion : "insertar") + " horario para clase ID " + claseId);
+            registro.put("accion", (accion != null ? accion : "insertar") + " horario para clase ID " + id_clase);
             registro.put("ip_origen", request.getRemoteAddr());
             auditoriaDAO.registrarAccion(registro);
 
-        } catch (SQLException e) {
+                } catch (SQLException | NumberFormatException e) {
             sesion.setAttribute("mensaje", "❌ Error al gestionar horario: " + e.getMessage());
             sesion.setAttribute("tipoMensaje", "danger");
         }
 
         // 🔄 Redirección con persistencia de selección
-        response.sendRedirect(request.getContextPath() + "/GestionarHorariosServlet?clase=" + claseId);
+        response.sendRedirect(request.getContextPath() + "/GestionarHorariosServlet?id_clase=" + id_clase);
     }
 }
