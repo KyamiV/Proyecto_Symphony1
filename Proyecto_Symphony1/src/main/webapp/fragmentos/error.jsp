@@ -45,7 +45,7 @@
         </div>
         <p class="mt-3">
             Si el problema persiste, contacta 
-            <a href="<%= request.getContextPath() %>/pages/soporte.jsp" class="text-decoration-none fw-semibold">
+            <a href="<%= request.getContextPath() %>/soporte.jsp" class="text-decoration-none fw-semibold">
                 soporte institucional
             </a>.
         </p>
