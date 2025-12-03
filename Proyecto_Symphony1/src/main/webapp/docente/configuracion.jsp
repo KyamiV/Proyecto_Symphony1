@@ -31,69 +31,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/estilos.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-        body { font-family: 'Poppins', sans-serif; }
-        .config-card {
-            max-width: 600px;
-            margin: auto;
-            border-radius: 15px;
-        }
-        .config-icon {
-            font-size: 2rem;
-            color: #0d6efd;
-        }
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: -250px;
-            width: 250px;
-            height: 100%;
-            background-color: #f8f9fa;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-            transition: left 0.3s ease;
-            z-index: 1050;
-            padding-top: 60px;
-        }
-        .sidebar.show { left: 0; }
-        .sidebar a {
-            display: block;
-            padding: 12px 20px;
-            color: #333;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .sidebar a:hover { background-color: #e9ecef; }
-        .hamburguesa-btn {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 1100;
-            background-color: #fff;
-            border: none;
-            font-size: 24px;
-            padding: 8px 12px;
-            border-radius: 5px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-        }
-    </style>
-</head>
-<body class="bg-light">
+    
+<!-- 📂 Menú lateral institucional -->
+    <jsp:include page="../fragmentos/sidebar.jsp" />
 
-<!-- Botón hamburguesa -->
-<button class="hamburguesa-btn" onclick="toggleSidebar()">
-    <i class="fas fa-bars"></i>
-</button>
-
-<!-- Menú lateral -->
-<div id="sidebar" class="sidebar">
-    <a href="<%= request.getContextPath() %>/dashboard.jsp"><i class="fas fa-home"></i> Inicio</a>
-    <a href="<%= request.getContextPath() %>/docente/registrarNotas.jsp"><i class="fas fa-pen"></i> Registrar calificaciones</a>
-    <a href="<%= request.getContextPath() %>/docente/verNotasDocente.jsp"><i class="fas fa-chart-bar"></i> Consultar notas</a>
-    <a href="<%= request.getContextPath() %>/docente/listadoEstudiantes.jsp"><i class="fas fa-users"></i> Ver estudiantes</a>
-    <a href="<%= request.getContextPath() %>/docente/verTablasEnviadas.jsp"><i class="fas fa-table"></i> Tablas enviadas</a>
-    <a href="<%= request.getContextPath() %>/docente/configuracion.jsp"><i class="fas fa-cog"></i> Configuración</a>
-    <a href="<%= request.getContextPath() %>/CerrarSesionServlet"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
-</div>
+    <!-- 🧭 Encabezado institucional -->
+    <jsp:include page="../fragmentos/header.jsp" />
 
 <!-- Contenido principal -->
 <div class="container mt-5">
@@ -146,6 +89,8 @@
         document.getElementById("sidebar").classList.toggle("show");
     }
 </script>
+    <!-- 📌 Pie de página -->
+    <jsp:include page="../fragmentos/footer.jsp" />
 
 </body>
 </html>

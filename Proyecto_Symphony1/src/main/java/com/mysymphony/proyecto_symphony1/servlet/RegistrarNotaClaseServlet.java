@@ -61,7 +61,6 @@ public class RegistrarNotaClaseServlet extends HttpServlet {
         String fecha = request.getParameter("fecha");
         String instrumento = request.getParameter("instrumento"); // opcional desde JSP
         String etapa = request.getParameter("etapa");             // opcional desde JSP
-        String tablaIdStr = request.getParameter("tablaId");      // opcional: vínculo con tabla guardada
 
         // Validaciones básicas
         if (claseIdStr == null || claseIdStr.isEmpty() ||
@@ -76,15 +75,12 @@ public class RegistrarNotaClaseServlet extends HttpServlet {
             return;
         }
 
-        int claseId, estudianteId, tablaId = 0;
+        int claseId, estudianteId;
         double nota;
         try {
             claseId = Integer.parseInt(claseIdStr);
             estudianteId = Integer.parseInt(idEstudianteStr);
             nota = Double.parseDouble(notaStr);
-            if (tablaIdStr != null && !tablaIdStr.isEmpty()) {
-                tablaId = Integer.parseInt(tablaIdStr);
-            }
         } catch (NumberFormatException e) {
             sesion.setAttribute("tipoMensaje", "danger");
             sesion.setAttribute("mensaje", "⚠️ Error de formato en IDs o nota.");
@@ -111,6 +107,12 @@ public class RegistrarNotaClaseServlet extends HttpServlet {
                 return;
             }
 
+            // 🔹 Obtener o crear tabla guardada automáticamente
+            int tablaId = notaDAO.obtenerIdTablaGuardada(claseId, idDocente);
+            if (tablaId == 0) {
+                tablaId = notaDAO.crearTablaGuardada(claseId, idDocente, nombreDocente);
+            }
+
             // Validar duplicado por clase/competencia
             if (notaDAO.existeNotaPorClase(claseId, estudianteId, competencia)) {
                 sesion.setAttribute("tipoMensaje", "warning");
@@ -126,8 +128,8 @@ public class RegistrarNotaClaseServlet extends HttpServlet {
                         idDocente,
                         instrumento,
                         etapa,
-                        tablaId,
-                        nombreDocente // registrada_por
+                        tablaId,       // ✅ id_tabla válido
+                        nombreDocente  // registrada_por
                 );
 
                 if (exito) {

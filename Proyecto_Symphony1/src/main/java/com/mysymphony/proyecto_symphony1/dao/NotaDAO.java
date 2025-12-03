@@ -672,6 +672,7 @@ public boolean existeEstudiante(int estudianteId) {
         return false;
     }
 }
+// Validar existencia de nota por tabla
 public boolean existenNotasPorTabla(int tablaId) {
     String sql = "SELECT COUNT(*) FROM notas_clase WHERE id_tabla = ?";
     try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -686,7 +687,7 @@ public boolean existenNotasPorTabla(int tablaId) {
     }
     return false;
 }
-
+// Contar notas por tabla
 public int contarNotasPorTabla(int tablaId) {
     String sql = "SELECT COUNT(*) FROM notas_clase WHERE id_tabla = ?";
     try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -702,4 +703,37 @@ public int contarNotasPorTabla(int tablaId) {
     return 0;
 }
 
+ // 🔹 Recuperar id_tabla guardada para clase/docente
+    public int obtenerIdTablaGuardada(int claseId, int docenteId) throws SQLException {
+        String sql = "SELECT id FROM tablas_guardadas WHERE id_clase=? AND id_docente=?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, claseId);
+            ps.setInt(2, docenteId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("id");
+            }
+        }
+        return 0; // no existe
+    }
+
+ // 🔹 Crear tabla guardada automáticamente
+    public int crearTablaGuardada(int claseId, int docenteId, String usuario) throws SQLException {
+        String sql = "INSERT INTO tablas_guardadas (id_clase, id_docente, nombre, descripcion, fecha_creacion, estado, registrada_por) VALUES (?, ?, ?, ?, NOW(), 'Pendiente', ?)";
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setInt(1, claseId);
+            ps.setInt(2, docenteId);
+            ps.setString(3, "Tabla automática clase " + claseId);
+            ps.setString(4, "Generada al registrar primera nota");
+            ps.setString(5, usuario);
+            ps.executeUpdate();
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+
+    
 }

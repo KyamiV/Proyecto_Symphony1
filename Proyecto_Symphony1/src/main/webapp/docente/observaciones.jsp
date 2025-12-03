@@ -127,6 +127,7 @@
                     <th>Docente</th>
                     <th>Fecha</th>
                     <th>Estado</th>
+                    <th>Acciones</th> 
                 </tr>
             </thead>
             <tbody>
@@ -140,6 +141,16 @@
                     <td><%= obs.get("docente") %></td>
                     <td><%= obs.get("fecha_registro") %></td>
                     <td><%= "Sí".equalsIgnoreCase(obs.get("enviada")) ? "✅ Enviada" : "⌛ Pendiente" %></td>
+                    <td>
+                        <!-- Botón eliminar -->
+                        <form action="<%= request.getContextPath() %>/EliminarObservacionServlet" method="post" style="display:inline;">
+                            <input type="hidden" name="idObservacion" value="<%= obs.get("id_observacion") %>">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que deseas eliminar esta observación?');">
+                                <i class="fas fa-trash-alt"></i> Eliminar
+                            </button>
+                        </form>
+                    </td>
+
                 </tr>
                 <% } } else { %>
                 <tr>

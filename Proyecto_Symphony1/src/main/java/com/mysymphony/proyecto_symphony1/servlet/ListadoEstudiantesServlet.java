@@ -57,7 +57,7 @@ public class ListadoEstudiantesServlet extends HttpServlet {
         if (rol == null || !"docente".equalsIgnoreCase(rol) || idDocente == null) {
             request.setAttribute("tipoMensaje", "danger");
             request.setAttribute("mensaje", "❌ Acceso restringido: requiere rol docente.");
-            request.getRequestDispatcher("/error.jsp").forward(request, response);
+            request.getRequestDispatcher("/fragmentos/error.jsp").forward(request, response);
             return;
         }
 
@@ -69,7 +69,7 @@ public class ListadoEstudiantesServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             request.setAttribute("tipoMensaje", "danger");
             request.setAttribute("mensaje", "❌ Clase no válida.");
-            request.getRequestDispatcher("/error.jsp").forward(request, response);
+            request.getRequestDispatcher("/fragmentos/error.jsp").forward(request, response);
             return;
         }
 
@@ -120,7 +120,7 @@ public class ListadoEstudiantesServlet extends HttpServlet {
             e.printStackTrace();
             request.setAttribute("tipoMensaje", "danger");
             request.setAttribute("mensaje", "❌ Error al consultar los estudiantes: " + e.getMessage());
-            request.getRequestDispatcher("/error.jsp").forward(request, response);
+            request.getRequestDispatcher("/fragmentos/error.jsp").forward(request, response);
             return;
         }
 

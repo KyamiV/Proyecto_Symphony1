@@ -99,4 +99,14 @@ public class ObservacionesDAO {
         }
         return lista;
     }
+    
+     // 🔹 Método para eliminar observación por ID
+    public boolean eliminarObservacion(int idObservacion) throws SQLException {
+        String sql = "DELETE FROM observaciones WHERE id_observacion = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idObservacion);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
 }
