@@ -86,6 +86,9 @@
     </dependencies>
 
     <build>
+        <!-- 👇 Nombre fijo del WAR -->
+        <finalName>Proyecto_Symphony1</finalName>
+
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
