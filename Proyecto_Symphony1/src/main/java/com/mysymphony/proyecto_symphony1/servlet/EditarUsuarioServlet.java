@@ -44,21 +44,25 @@ public class EditarUsuarioServlet extends HttpServlet {
 
         int id;
         try {
-            id = Integer.parseInt(request.getParameter("id"));
+            id = Integer.parseInt(request.getParameter("idUsuario"));
         } catch (NumberFormatException e) {
-            sesion.setAttribute("mensaje", "⚠️ ID de usuario no válido.");
+            if (sesion != null) {
+                sesion.setAttribute("mensaje", "⚠️ ID de usuario no válido.");
+            }
             response.sendRedirect("VerUsuariosServlet");
             return;
         }
 
         try (Connection conn = Conexion.getConnection()) {
             UsuarioDAO dao = new UsuarioDAO(conn);
-            Usuario usuario = dao.obtenerPorId(id); // método que devuelve un Usuario por ID
+            Usuario usuario = dao.obtenerPorId(id);
             request.setAttribute("usuarioEditar", usuario);
             request.getRequestDispatcher("/administrador/editarUsuario.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
-            sesion.setAttribute("mensaje", "❌ Error al cargar datos de usuario.");
+            if (sesion != null) {
+                sesion.setAttribute("mensaje", "❌ Error al cargar datos de usuario.");
+            }
             response.sendRedirect("VerUsuariosServlet");
         }
     }
@@ -77,11 +81,14 @@ public class EditarUsuarioServlet extends HttpServlet {
             return;
         }
 
-        int id = Integer.parseInt(request.getParameter("id"));
+        int id = Integer.parseInt(request.getParameter("idUsuario"));
         String nombre = request.getParameter("nombre");
         String correo = request.getParameter("correo");
         String rolNuevo = request.getParameter("rol");
         String estado = request.getParameter("estado");
+
+        boolean actualizado = false;
+        String mensaje;
 
         try (Connection conn = Conexion.getConnection()) {
             UsuarioDAO dao = new UsuarioDAO(conn);
@@ -92,7 +99,7 @@ public class EditarUsuarioServlet extends HttpServlet {
             u.setRol(rolNuevo);
             u.setEstado(estado);
 
-            boolean actualizado = dao.actualizar(u);
+            actualizado = dao.actualizar(u);
 
             // Bitácora
             BitacoraDAO bitacoraDAO = new BitacoraDAO(conn);
@@ -113,18 +120,35 @@ public class EditarUsuarioServlet extends HttpServlet {
             if (actualizado) {
                 registro.put("accion", "Editó usuario institucional con ID " + id);
                 new AuditoriaDAO(conn).registrarAccion(registro);
-                sesion.setAttribute("mensaje", "✅ Usuario actualizado correctamente.");
+                mensaje = "✅ Usuario actualizado correctamente.";
             } else {
                 registro.put("accion", "Intentó editar usuario ID " + id + " pero no se actualizó.");
                 new AuditoriaDAO(conn).registrarAccion(registro);
-                sesion.setAttribute("mensaje", "⚠️ No se pudo actualizar el usuario.");
+                mensaje = "⚠️ No se pudo actualizar el usuario.";
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            sesion.setAttribute("mensaje", "❌ Error al actualizar usuario.");
+            mensaje = "❌ Error al actualizar usuario.";
         }
 
+        // 🔎 Validación de salida JSON para Postman
+        String acceptHeader = request.getHeader("Accept");
+        if (acceptHeader != null && acceptHeader.contains("application/json")) {
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            if (actualizado) {
+                response.getWriter().write("{\"status\":\"ok\",\"mensaje\":\"" + mensaje + "\",\"usuario\":\"" + correo + "\",\"rol\":\"" + rolNuevo + "\"}");
+            } else {
+                response.getWriter().write("{\"status\":\"error\",\"mensaje\":\"" + mensaje + "\"}");
+            }
+            return; // 👈 importante: salir para no redirigir
+        }
+
+        // 👉 Si no es JSON (ej. navegador), redirigir normalmente
+        if (sesion != null) {
+            sesion.setAttribute("mensaje", mensaje);
+        }
         response.sendRedirect("VerUsuariosServlet");
     }
 }

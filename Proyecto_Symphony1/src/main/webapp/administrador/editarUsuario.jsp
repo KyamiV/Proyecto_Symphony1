@@ -61,7 +61,8 @@
     <div class="form-box">
         <h4 class="mb-4"><i class="fas fa-user-edit"></i> Editar usuario institucional</h4>
         <form action="<%= request.getContextPath() %>/EditarUsuarioServlet" method="post">
-            <input type="hidden" name="id" value="<%= usuario.getId() %>">
+            <!-- ⚠️ Campo oculto corregido: idUsuario -->
+            <input type="hidden" name="idUsuario" value="<%= usuario.getIdUsuario() %>">
 
             <div class="mb-3">
                 <label class="form-label">Nombre completo:</label>
@@ -79,6 +80,15 @@
                     <option value="estudiante" <%= "estudiante".equals(usuario.getRol()) ? "selected" : "" %>>Estudiante</option>
                     <option value="docente" <%= "docente".equals(usuario.getRol()) ? "selected" : "" %>>Docente</option>
                     <option value="administrador" <%= "administrador".equals(usuario.getRol()) ? "selected" : "" %>>Administrador</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Estado:</label>
+                <select name="estado" class="form-select" required>
+                    <option value="activo" <%= "activo".equals(usuario.getEstado()) ? "selected" : "" %>>Activo</option>
+                    <option value="inactivo" <%= "inactivo".equals(usuario.getEstado()) ? "selected" : "" %>>Inactivo</option>
+                    <option value="suspendido" <%= "suspendido".equals(usuario.getEstado()) ? "selected" : "" %>>Suspendido</option>
                 </select>
             </div>
 

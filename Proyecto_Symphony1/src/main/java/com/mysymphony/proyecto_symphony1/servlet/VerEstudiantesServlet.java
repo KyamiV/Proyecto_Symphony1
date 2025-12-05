@@ -41,12 +41,12 @@ public class VerEstudiantesServlet extends HttpServlet {
         List<Map<String,String>> clasesInscritas = new ArrayList<>();
 
         try (Connection conn = Conexion.getConnection()) {
-            // ✅ Consulta filtrada por estudiante (sin observacion)
+            // ✅ Consulta filtrada por estudiante
             String sql = "SELECT e.id_estudiante, e.nombre, e.correo, u.estado, e.etapa_pedagogica, " +
                         "c.id_clase, c.nombre_clase, c.instrumento, c.etapa AS etapa_clase, c.grupo, c.estado AS estado_clase, " +
                         "ic.fecha_inscripcion, n.nota " +
                         "FROM estudiantes e " +
-                        "JOIN usuarios u ON e.id_usuario = u.id_usuario " +   // ✅ corregido
+                        "JOIN usuarios u ON e.id_usuario = u.id_usuario " +
                         "LEFT JOIN inscripciones_clase ic ON e.id_estudiante = ic.id_estudiante " +
                         "LEFT JOIN clases c ON ic.id_clase = c.id_clase " +
                         "LEFT JOIN notas n ON e.id_estudiante = n.id_estudiante AND c.id_clase = n.id_clase " +
@@ -70,7 +70,6 @@ public class VerEstudiantesServlet extends HttpServlet {
                         fila.put("estadoClase", rs.getString("estado_clase"));
                         fila.put("fechaInscripcion", rs.getString("fecha_inscripcion"));
                         fila.put("nota", rs.getString("nota"));
-                        // ❌ observacion eliminado porque no existe en la tabla
                         clasesInscritas.add(fila);
                     }
                 }
@@ -84,9 +83,15 @@ public class VerEstudiantesServlet extends HttpServlet {
         }
 
         // 📤 Enviar datos a la vista institucional
-        request.setAttribute("idClase", idEstudiante);
+        request.setAttribute("idEstudiante", idEstudiante); // ✅ corregido
         request.setAttribute("inscripciones", clasesInscritas);
         request.setAttribute("totalInscritos", clasesInscritas.size());
+
+        if (clasesInscritas.isEmpty()) {
+            request.setAttribute("mensaje", "⚠️ El estudiante no tiene clases inscritas.");
+            request.setAttribute("tipoMensaje", "info");
+        }
+
         request.getRequestDispatcher("/administrador/verEstudiantes.jsp").forward(request, response);
     }
 }

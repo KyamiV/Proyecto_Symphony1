@@ -53,34 +53,42 @@ public class InscripcionDAO {
     }
 
     // ✅ Listar todas las inscripciones con nombres de estudiante y clase
-    public List<Map<String,Object>> listar() {
-        List<Map<String,Object>> lista = new ArrayList<>();
-        String sql = "SELECT i.id_inscripcion, i.id_clase, i.id_estudiante, i.fecha_inscripcion, " +
-                     "e.nombre AS nombre_estudiante, c.nombre_clase AS nombre_clase " +
-                     "FROM inscripciones_clase i " +
-                     "LEFT JOIN estudiantes e ON i.id_estudiante = e.id_estudiante " +
-                     "LEFT JOIN clases c ON i.id_clase = c.id_clase " +
-                     "ORDER BY i.fecha_inscripcion DESC";
+public List<Inscripcion> listar() {
+    List<Inscripcion> lista = new ArrayList<>();
+    String sql = "SELECT i.id_inscripcion, i.id_clase, i.id_estudiante, i.fecha_inscripcion, " +
+                 "e.nombre AS nombre_estudiante, e.correo AS correo_estudiante, " +
+                 "c.nombre_clase AS nombre_clase " +
+                 "FROM inscripciones_clase i " +
+                 "LEFT JOIN estudiantes e ON i.id_estudiante = e.id_estudiante " +
+                 "LEFT JOIN clases c ON i.id_clase = c.id_clase " +
+                 "ORDER BY i.fecha_inscripcion DESC";
 
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+    try (PreparedStatement ps = conn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
 
-            while (rs.next()) {
-                Map<String,Object> fila = new HashMap<>();
-                fila.put("id_inscripcion", rs.getInt("id_inscripcion"));
-                fila.put("id_clase", rs.getInt("id_clase"));
-                fila.put("id_estudiante", rs.getInt("id_estudiante"));
-                fila.put("fecha_inscripcion", rs.getDate("fecha_inscripcion"));
-                fila.put("nombre_estudiante", rs.getString("nombre_estudiante"));
-                fila.put("nombre_clase", rs.getString("nombre_clase"));
-                lista.add(fila);
-            }
+        while (rs.next()) {
+            Inscripcion ins = new Inscripcion();
+            ins.setId(rs.getInt("id_inscripcion"));
+            ins.setClaseId(rs.getInt("id_clase"));
+            ins.setIdEstudiante(rs.getInt("id_estudiante"));
 
-        } catch (SQLException e) {
-            System.err.println("❌ Error al listar inscripciones: " + e.getMessage());
+            // Conversión correcta de java.sql.Date a LocalDate
+            java.sql.Date sqlDate = rs.getDate("fecha_inscripcion");
+            ins.setFechaInscripcion(sqlDate != null ? sqlDate.toLocalDate() : null);
+
+            // Poblar datos adicionales desde los JOIN
+            ins.setNombreEstudiante(rs.getString("nombre_estudiante"));
+            ins.setCorreoEstudiante(rs.getString("correo_estudiante"));
+            ins.setNombreClase(rs.getString("nombre_clase"));
+
+            lista.add(ins);
         }
-        return lista;
+
+    } catch (SQLException e) {
+        System.err.println("❌ Error al listar inscripciones: " + e.getMessage());
     }
+    return lista;
+}
 
     // ✅ Listar inscripciones por clase (usando modelo Inscripcion)
     public List<Inscripcion> listarInscripcionesPorClase(int idClase) {
@@ -115,38 +123,44 @@ public class InscripcionDAO {
 }
 
     // ✅ Buscar inscripciones por filtro textual (nombre estudiante o clase)
-    public List<Map<String,Object>> buscar(String filtro) {
-        List<Map<String,Object>> lista = new ArrayList<>();
-        String sql = "SELECT i.id_inscripcion, i.id_clase, i.id_estudiante, i.fecha_inscripcion, " +
-                     "e.nombre AS nombre_estudiante, c.nombre_clase AS nombre_clase " +
-                     "FROM inscripciones_clase i " +
-                     "LEFT JOIN estudiantes e ON i.id_estudiante = e.id_estudiante " +
-                     "LEFT JOIN clases c ON i.id_clase = c.id_clase " +
-                     "WHERE e.nombre LIKE ? OR c.nombre_clase LIKE ? " +
-                     "ORDER BY i.fecha_inscripcion DESC";
+public List<Inscripcion> buscar(String filtro) {
+    List<Inscripcion> lista = new ArrayList<>();
+    String sql = "SELECT i.id_inscripcion, i.id_clase, i.id_estudiante, i.fecha_inscripcion, " +
+                 "e.nombre AS nombre_estudiante, e.correo AS correo_estudiante, " +
+                 "c.nombre_clase AS nombre_clase " +
+                 "FROM inscripciones_clase i " +
+                 "LEFT JOIN estudiantes e ON i.id_estudiante = e.id_estudiante " +
+                 "LEFT JOIN clases c ON i.id_clase = c.id_clase " +
+                 "WHERE e.nombre LIKE ? OR c.nombre_clase LIKE ? " +
+                 "ORDER BY i.fecha_inscripcion DESC";
 
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            String filtroLike = "%" + filtro + "%";
-            ps.setString(1, filtroLike);
-            ps.setString(2, filtroLike);
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        String filtroLike = "%" + filtro + "%";
+        ps.setString(1, filtroLike);
+        ps.setString(2, filtroLike);
 
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Map<String,Object> fila = new HashMap<>();
-                    fila.put("id_inscripcion", rs.getInt("id_inscripcion"));
-                    fila.put("id_clase", rs.getInt("id_clase"));
-                    fila.put("id_estudiante", rs.getInt("id_estudiante"));
-                    fila.put("fecha_inscripcion", rs.getDate("fecha_inscripcion"));
-                    fila.put("nombre_estudiante", rs.getString("nombre_estudiante"));
-                    fila.put("nombre_clase", rs.getString("nombre_clase"));
-                    lista.add(fila);
-                }
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Inscripcion ins = new Inscripcion();
+                ins.setId(rs.getInt("id_inscripcion"));
+                ins.setClaseId(rs.getInt("id_clase"));
+                ins.setIdEstudiante(rs.getInt("id_estudiante"));
+
+                java.sql.Date sqlDate = rs.getDate("fecha_inscripcion");
+                ins.setFechaInscripcion(sqlDate != null ? sqlDate.toLocalDate() : null);
+
+                ins.setNombreEstudiante(rs.getString("nombre_estudiante"));
+                ins.setCorreoEstudiante(rs.getString("correo_estudiante"));
+                ins.setNombreClase(rs.getString("nombre_clase"));
+
+                lista.add(ins);
             }
-        } catch (SQLException e) {
-            System.err.println("❌ Error al buscar inscripciones con filtro '" + filtro + "': " + e.getMessage());
         }
-        return lista;
+    } catch (SQLException e) {
+        System.err.println("❌ Error al buscar inscripciones con filtro '" + filtro + "': " + e.getMessage());
     }
+    return lista;
+}
 
     // ✅ Listar estudiantes inscritos en una clase específica (modo Estudiante)
     public List<Estudiante> listarEstudiantesPorClase(int idClase) {

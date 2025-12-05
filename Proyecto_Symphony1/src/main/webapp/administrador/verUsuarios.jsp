@@ -4,7 +4,6 @@
     Descripción: Vista institucional para mostrar usuarios registrados en SymphonySIAS.
                  Requiere atributo 'usuarios' con lista de objetos Usuario.
 --%>
-
 <%@ page contentType="text/html;charset=UTF-8" language="java" session="true" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
@@ -62,15 +61,18 @@
                         <td class="text-center"><%= u.getRol() %></td>
                         <td class="text-center"><%= u.getEstado() %></td>
                         <td class="text-center">
-                            <!-- ✅ Editar con POST enviando todos los datos -->
-                            <form action="<%= request.getContextPath() %>/EditarUsuarioServlet" method="post" style="display:inline;">
-                                <input type="hidden" name="id" value="<%= u.getIdUsuario() %>">
-                                <input type="hidden" name="nombre" value="<%= u.getNombre() %>">
-                                <input type="hidden" name="correo" value="<%= u.getCorreo() %>">
-                                <input type="hidden" name="rol" value="<%= u.getRol() %>">
-                                <input type="hidden" name="estado" value="<%= u.getEstado() %>">
-                                <button type="submit" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-edit"></i> Editar
+                            <!-- ✅ Editar: abre formulario -->
+                            <a href="<%= request.getContextPath() %>/EditarUsuarioServlet?idUsuario=<%= u.getIdUsuario() %>"
+                               class="btn btn-sm btn-outline-primary">
+                               <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <!-- ❌ Eliminar -->
+                            <form action="<%= request.getContextPath() %>/VerUsuariosServlet" method="get" style="display:inline;"
+                                  onsubmit="return confirm('¿Seguro que deseas eliminar este usuario?');">
+                                <input type="hidden" name="accion" value="eliminar">
+                                <input type="hidden" name="idUsuario" value="<%= u.getIdUsuario() %>">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i> Eliminar
                                 </button>
                             </form>
                         </td>
@@ -99,10 +101,18 @@
                         <td class="text-center"><%= d.get("clases_asignadas") %></td>
                         <td class="text-center"><%= d.get("estado") %></td>
                         <td class="text-center">
-                            <a href="<%= request.getContextPath() %>/VerDocentesServlet?idDocente=<%= d.get("id") %>" 
+                            <a href="<%= request.getContextPath() %>/VerDocentesServlet?idDocente=<%= d.get("id") %>"
                                class="btn btn-sm btn-outline-info">
                                <i class="fas fa-eye"></i> Ver clases
                             </a>
+                            <form action="<%= request.getContextPath() %>/VerUsuariosServlet" method="get" style="display:inline;"
+                                  onsubmit="return confirm('¿Seguro que deseas eliminar este docente?');">
+                                <input type="hidden" name="accion" value="eliminar">
+                                <input type="hidden" name="idUsuario" value="<%= d.get("id") %>">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </form>
                         </td>
                     </tr>
                 <%   }
@@ -131,10 +141,18 @@
                         <td class="text-center"><%= e.get("clases_activas") %></td>
                         <td class="text-center"><%= e.get("clases_certificadas") %></td>
                         <td class="text-center">
-                            <a href="<%= request.getContextPath() %>/VerEstudiantesServlet?idEstudiante=<%= e.get("id") %>" 
+                            <a href="<%= request.getContextPath() %>/VerEstudiantesServlet?idEstudiante=<%= e.get("id") %>"
                                class="btn btn-sm btn-outline-info">
                                <i class="fas fa-eye"></i> Ver clases
                             </a>
+                            <form action="<%= request.getContextPath() %>/VerUsuariosServlet" method="get" style="display:inline;"
+                                  onsubmit="return confirm('¿Seguro que deseas eliminar este estudiante?');">
+                                <input type="hidden" name="accion" value="eliminar">
+                                <input type="hidden" name="idUsuario" value="<%= e.get("id") %>">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </form>
                         </td>
                     </tr>
                 <%   }
@@ -144,7 +162,7 @@
 
         <!-- 🔙 Botón de regreso -->
         <div class="mt-4 text-end">
-            <a href="<%= request.getContextPath() %>/PanelAdministradorServlet" 
+            <a href="<%= request.getContextPath() %>/PanelAdministradorServlet"
                class="btn btn-outline-success">
                 <i class="fas fa-arrow-left"></i> Volver al panel
             </a>

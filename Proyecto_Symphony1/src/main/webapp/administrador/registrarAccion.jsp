@@ -6,7 +6,6 @@
 --%>
 
 <%@ page contentType="text/html;charset=UTF-8" language="java" session="true" %>
-
 <%
     HttpSession sesion = request.getSession();
     String rol = (String) sesion.getAttribute("rolActivo");
@@ -67,12 +66,12 @@
     <% } %>
 
     <form action="<%= request.getContextPath() %>/RegistrarAccionAdminServlet" method="post">
+        <!-- Datos ocultos para trazabilidad -->
         <input type="hidden" name="usuario" value="<%= usuario %>">
         <input type="hidden" name="rol" value="<%= rol %>">
-        <input type="hidden" name="tabla_id" value="">
-        <input type="hidden" name="referencia_id" value="">
         <input type="hidden" name="ip_origen" value="<%= request.getRemoteAddr() %>">
 
+        <!-- Selección del módulo -->
         <div class="mb-3">
             <label class="form-label">📂 Área revisada:</label>
             <select name="modulo" class="form-select" required>
@@ -86,11 +85,15 @@
             </select>
         </div>
 
+        <!-- Descripción de la acción -->
         <div class="mb-3">
             <label class="form-label">🗒️ Validación realizada:</label>
-            <textarea name="accion" class="form-control" rows="3" placeholder="Ej. Validé las notas de la clase 3A antes de enviarlas" required></textarea>
+            <textarea name="accion" class="form-control" rows="3"
+                      placeholder="Ej. Validé las notas de la clase 3A antes de enviarlas"
+                      required></textarea>
         </div>
 
+        <!-- Botones -->
         <div class="d-flex justify-content-between">
             <button type="submit" class="btn btn-success">
                 <i class="fas fa-check"></i> Registrar validación

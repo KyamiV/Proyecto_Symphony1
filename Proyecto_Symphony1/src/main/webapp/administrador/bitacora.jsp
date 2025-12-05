@@ -69,6 +69,7 @@
         <table class="table table-bordered table-hover">
             <thead class="table-light text-center">
                 <tr>
+                    <th>ID</th>
                     <th>Usuario</th>
                     <th>Rol</th>
                     <th>Módulo</th>
@@ -80,16 +81,18 @@
             <% if (registros != null && !registros.isEmpty()) {
                    for (Map<String, String> fila : registros) { %>
                 <tr>
+                    <td><%= fila.get("id_accion") %></td>
                     <td><%= fila.get("usuario") %></td>
                     <td><%= fila.get("rol") %></td>
                     <td><%= fila.get("modulo") %></td>
                     <td><%= fila.get("accion") %></td>
-                    <td><%= fila.get("fecha") %></td>
+                    <!-- ✅ Corrección: usar fecha_registro -->
+                    <td><%= fila.get("fecha_registro") %></td>
                 </tr>
             <%     }
                } else { %>
                 <tr>
-                    <td colspan="5" class="text-center">No hay registros en la bitácora.</td>
+                    <td colspan="6" class="text-center">No hay registros en la bitácora.</td>
                 </tr>
             <% } %>
             </tbody>
@@ -99,7 +102,7 @@
 
 <div class="text-end mt-4">
     <!-- Botón registrar acción -->
-    <form action="registrarAccion.jsp" method="get" style="display:inline;">
+    <form action="<%= request.getContextPath() %>/RegistrarAccionAdminServlet" method="get" style="display:inline;">
         <button type="submit" class="btn btn-outline-primary">
             <i class="fas fa-pen-nib"></i> Registrar acción institucional
         </button>

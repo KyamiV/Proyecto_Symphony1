@@ -36,6 +36,26 @@ public class UsuarioDAO {
         }
     }
 
+     // 🔹 Eliminar usuario por ID
+    public void eliminarUsuario(int idUsuario) throws SQLException {
+        String sql = "DELETE FROM usuarios WHERE id_usuario = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idUsuario);
+            ps.executeUpdate();
+        }
+    }
+
+    // 🔹 Actualizar estado de usuario
+    public void actualizarEstadoUsuario(int idUsuario, String nuevoEstado) throws SQLException {
+        String sql = "UPDATE usuarios SET estado = ? WHERE id_usuario = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, nuevoEstado);
+            ps.setInt(2, idUsuario);
+            ps.executeUpdate();
+        }
+    }
+
+    
     // ============================================================
     // MÉTODOS CRUD Y DE VALIDACIÓN
     // ============================================================

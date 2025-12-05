@@ -11,7 +11,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Estudiantes registrados</title>
+    <title>Clases inscritas del estudiante</title>
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome -->
@@ -33,7 +33,7 @@
         <!-- Título -->
         <div class="titulo-panel mb-4">
             <h2>
-                👩‍🎓 Estudiantes registrados en SymphonySIAS
+                📚 Clases inscritas del estudiante ID: ${idEstudiante}
             </h2>
         </div>
 
@@ -44,41 +44,46 @@
             </div>
         </c:if>
 
-        <!-- ✅ Tabla de estudiantes -->
+        <!-- ✅ Tabla de clases inscritas -->
         <c:choose>
-            <c:when test="${not empty listaEstudiantes}">
+            <c:when test="${not empty inscripciones}">
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover align-middle">
                         <thead class="table-success text-center">
                             <tr>
-                                <th>ID Estudiante</th>
-                                <th>Nombre</th>
-                                <th>Correo</th>
+                                <th>ID Clase</th>
+                                <th>Nombre de la clase</th>
+                                <th>Instrumento</th>
+                                <th>Etapa</th>
+                                <th>Grupo</th>
                                 <th>Estado</th>
-                                <th>Etapa pedagógica</th>
-                                <th>Clases activas</th>
-                                <th>Clases certificadas</th>
+                                <th>Fecha inscripción</th>
+                                <th>Nota</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <c:forEach var="est" items="${listaEstudiantes}">
+                            <c:forEach var="fila" items="${inscripciones}">
                                 <tr>
-                                    <td class="text-center">${est.id}</td>
-                                    <td>${est.nombre}</td>
-                                    <td>${est.correo}</td>
-                                    <td class="text-center">${est.estado}</td>
-                                    <td class="text-center">${est.etapa}</td>
-                                    <td class="text-center">${est.clases_activas}</td>
-                                    <td class="text-center">${est.clases_certificadas}</td>
+                                    <td class="text-center">${fila.idClase}</td>
+                                    <td>${fila.nombreClase}</td>
+                                    <td>${fila.instrumento}</td>
+                                    <td class="text-center">${fila.etapaClase}</td>
+                                    <td class="text-center">${fila.grupo}</td>
+                                    <td class="text-center">${fila.estadoClase}</td>
+                                    <td class="text-center">${fila.fechaInscripcion}</td>
+                                    <td class="text-center">${fila.nota}</td>
                                 </tr>
                             </c:forEach>
                         </tbody>
                     </table>
                 </div>
+                <div class="mt-2 text-muted">
+                    Total de clases inscritas: ${totalInscritos}
+                </div>
             </c:when>
             <c:otherwise>
                 <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-circle"></i> No hay estudiantes registrados.
+                    <i class="fas fa-exclamation-circle"></i> El estudiante no tiene clases inscritas.
                 </div>
             </c:otherwise>
         </c:choose>

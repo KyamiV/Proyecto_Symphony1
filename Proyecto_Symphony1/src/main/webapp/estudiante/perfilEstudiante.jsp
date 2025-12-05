@@ -60,63 +60,76 @@
                         <form action="<%= request.getContextPath() %>/ActualizarPerfilEstudianteServlet" 
                               method="post" class="needs-validation" novalidate>
 
-                            <div class="mb-3">
-                                <label class="form-label">Nombre:</label>
-                                <input type="text" name="nombre" class="form-control"
-                                       value="<%= perfil.get("nombre") != null ? perfil.get("nombre") : "" %>" required>
-                                <div class="invalid-feedback">El nombre es obligatorio.</div>
+                            <!-- Datos personales -->
+                            <h5 class="mb-3"><i class="fas fa-user"></i> Datos personales</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nombre:</label>
+                                    <input type="text" name="nombre" class="form-control"
+                                           value="<%= perfil.get("nombre") != null ? perfil.get("nombre") : "" %>" required>
+                                    <div class="invalid-feedback">El nombre es obligatorio.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Apellido:</label>
+                                    <input type="text" name="apellido" class="form-control"
+                                           value="<%= perfil.get("apellido") != null ? perfil.get("apellido") : "" %>" required>
+                                    <div class="invalid-feedback">El apellido es obligatorio.</div>
+                                </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Apellido:</label>
-                                <input type="text" name="apellido" class="form-control"
-                                       value="<%= perfil.get("apellido") != null ? perfil.get("apellido") : "" %>" required>
-                                <div class="invalid-feedback">El apellido es obligatorio.</div>
+                            <!-- Contacto -->
+                            <hr class="my-4">
+                            <h5 class="mb-3"><i class="fas fa-envelope"></i> Contacto</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Correo institucional:</label>
+                                    <input type="email" name="correo_estudiante" class="form-control"
+                                           value="<%= perfil.get("correo_estudiante") != null ? perfil.get("correo_estudiante") : "" %>" required>
+                                    <div class="invalid-feedback">Correo institucional obligatorio y válido.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Correo usuario:</label>
+                                    <input type="email" name="correo" class="form-control"
+                                           value="<%= perfil.get("correo_usuario") != null ? perfil.get("correo_usuario") : "" %>" required>
+                                    <div class="invalid-feedback">Correo de usuario obligatorio y válido.</div>
+                                </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Correo estudiante:</label>
-                                <input type="email" name="correo_estudiante" class="form-control"
-                                       value="<%= perfil.get("correo_estudiante") != null ? perfil.get("correo_estudiante") : "" %>" required>
-                                <div class="invalid-feedback">El correo institucional es obligatorio y debe ser válido.</div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Teléfono:</label>
+                                    <input type="text" name="telefono" pattern="[0-9]{7,10}" class="form-control"
+                                           value="<%= perfil.get("telefono") != null ? perfil.get("telefono") : "" %>">
+                                    <div class="invalid-feedback">Entre 7 y 10 dígitos.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Dirección:</label>
+                                    <input type="text" name="direccion" class="form-control"
+                                           value="<%= perfil.get("direccion") != null ? perfil.get("direccion") : "" %>">
+                                </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Correo usuario:</label>
-                                <input type="email" name="correo" class="form-control"
-                                       value="<%= perfil.get("correo_usuario") != null ? perfil.get("correo_usuario") : "" %>" required>
-                                <div class="invalid-feedback">El correo de usuario es obligatorio y debe ser válido.</div>
+                            <!-- Académico -->
+                            <hr class="my-4">
+                            <h5 class="mb-3"><i class="fas fa-music"></i> Información académica</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Instrumento:</label>
+                                    <input type="text" name="instrumento" class="form-control"
+                                           value="<%= perfil.get("instrumento") != null ? perfil.get("instrumento") : "" %>">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Etapa pedagógica:</label>
+                                    <input type="text" name="etapa_pedagogica" class="form-control"
+                                           value="<%= perfil.get("etapa_pedagogica") != null ? perfil.get("etapa_pedagogica") : "" %>">
+                                </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Instrumento:</label>
-                                <input type="text" name="instrumento" class="form-control"
-                                       value="<%= perfil.get("instrumento") != null ? perfil.get("instrumento") : "" %>">
+                            <div class="text-end mt-4">
+                                <button type="submit" class="btn btn-success px-4">
+                                    <i class="fas fa-save"></i> Guardar cambios
+                                </button>
                             </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Dirección:</label>
-                                <input type="text" name="direccion" class="form-control"
-                                       value="<%= perfil.get("direccion") != null ? perfil.get("direccion") : "" %>">
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Teléfono:</label>
-                                <input type="text" name="telefono" pattern="[0-9]{7,10}" class="form-control"
-                                       value="<%= perfil.get("telefono") != null ? perfil.get("telefono") : "" %>">
-                                <div class="invalid-feedback">El teléfono debe tener entre 7 y 10 dígitos.</div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Etapa pedagógica:</label>
-                                <input type="text" name="etapa_pedagogica" class="form-control"
-                                       value="<%= perfil.get("etapa_pedagogica") != null ? perfil.get("etapa_pedagogica") : "" %>">
-                            </div>
-
-                            <hr>
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-save"></i> Guardar cambios
-                            </button>
                         </form>
                     </div>
                 </div>
@@ -143,8 +156,8 @@
           <div class="modal-header 
                <%= "success".equals(tipoMensaje) ? "bg-success text-white" : 
                    "danger".equals(tipoMensaje) ? "bg-danger text-white" : 
-                   "warning".equals(tipoMensaje) ? "bg-warning" : "bg-info" %>">
-            <h5 class="modal-title">Mensaje del sistema</h5>
+                   "warning".equals(tipoMensaje) ? "bg-warning text-dark" : "bg-info text-white" %>">
+            <h5 class="modal-title"><i class="fas fa-info-circle me-2"></i> Mensaje del sistema</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body">
@@ -173,7 +186,7 @@
             });
         })();
 
-        // Mostrar modal si hay mensaje
+                // Mostrar modal si hay mensaje
         <% if (mensaje != null) { %>
             var modal = new bootstrap.Modal(document.getElementById('mensajeModal'));
             modal.show();

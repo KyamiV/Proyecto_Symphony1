@@ -14,6 +14,7 @@ package com.mysymphony.proyecto_symphony1.servlet;
 
 import com.mysymphony.proyecto_symphony1.dao.InscripcionDAO;
 import com.mysymphony.proyecto_symphony1.dao.AuditoriaDAO;
+import com.mysymphony.proyecto_symphony1.modelo.Inscripcion;
 import com.mysymphony.proyecto_symphony1.util.Conexion;
 
 import javax.servlet.ServletException;
@@ -49,7 +50,7 @@ public class InscripcionListServlet extends HttpServlet {
         }
 
         String filtro = request.getParameter("filtro");
-        List<Map<String,Object>> lista;
+        List<Inscripcion> lista;
 
         try (Connection conn = Conexion.getConnection()) {
             InscripcionDAO dao = new InscripcionDAO(conn);
@@ -57,10 +58,10 @@ public class InscripcionListServlet extends HttpServlet {
             // ✅ Consultar inscripciones con o sin filtro
             if (filtro != null && !filtro.trim().isEmpty()) {
                 System.out.println("DEBUG Servlet: aplicando filtro -> " + filtro);
-                lista = dao.buscar(filtro.trim()); // debe existir buscar(String filtro) en tu DAO
+                lista = dao.buscar(filtro.trim()); // debe existir buscar(String filtro) en tu DAO que devuelva List<Inscripcion>
             } else {
                 System.out.println("DEBUG Servlet: sin filtro, listando todas las inscripciones");
-                lista = dao.listar();
+                lista = dao.listar(); // devuelve List<Inscripcion>
             }
 
             if (lista.isEmpty()) {
@@ -75,12 +76,13 @@ public class InscripcionListServlet extends HttpServlet {
             // 📝 Registro en auditoría institucional
             AuditoriaDAO auditoriaDAO = new AuditoriaDAO(conn);
             Map<String, String> registro = new HashMap<>();
-            registro.put("usuario", usuario);
+            registro.put("usuario", usuario + " (ID: " + sesion.getAttribute("idActivo") + ")");
             registro.put("rol", rol);
             registro.put("modulo", "Inscripciones");
             registro.put("accion", (filtro != null && !filtro.trim().isEmpty())
                     ? "Consultó inscripciones con filtro '" + filtro + "'"
                     : "Consultó todas las inscripciones");
+            registro.put("detalle", "Se consultaron " + lista.size() + " inscripciones.");
             registro.put("ip_origen", request.getRemoteAddr());
             auditoriaDAO.registrarAccion(registro);
 
@@ -91,12 +93,13 @@ public class InscripcionListServlet extends HttpServlet {
             e.printStackTrace();
             if (sesion != null) {
                 sesion.setAttribute("mensaje", mensajeError);
+                sesion.setAttribute("tipoMensaje", "error");
             }
             response.sendRedirect(request.getContextPath() + "/panelAdministrador.jsp");
             return;
         }
 
         // ✅ Redirigir a la vista institucional
-        request.getRequestDispatcher("listaInscripciones.jsp").forward(request, response);
+        request.getRequestDispatcher("/administrador/listaInscripciones.jsp").forward(request, response);
     }
 }

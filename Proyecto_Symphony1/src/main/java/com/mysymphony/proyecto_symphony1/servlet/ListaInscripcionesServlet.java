@@ -14,6 +14,7 @@ package com.mysymphony.proyecto_symphony1.servlet;
 
 import com.mysymphony.proyecto_symphony1.dao.InscripcionDAO;
 import com.mysymphony.proyecto_symphony1.dao.AuditoriaDAO;
+import com.mysymphony.proyecto_symphony1.modelo.Inscripcion;
 import com.mysymphony.proyecto_symphony1.util.Conexion;
 
 import javax.servlet.ServletException;
@@ -53,7 +54,7 @@ public class ListaInscripcionesServlet extends HttpServlet {
             AuditoriaDAO auditoriaDAO = new AuditoriaDAO(conn);
 
             // 📌 Consultar todas las inscripciones desde inscripciones_clase
-            List<Map<String,Object>> inscripciones = inscripcionDAO.listar();
+            List<Inscripcion> inscripciones = inscripcionDAO.listar();
             request.setAttribute("inscripciones", inscripciones);
 
             if (inscripciones.isEmpty()) {
@@ -86,7 +87,7 @@ public class ListaInscripcionesServlet extends HttpServlet {
                 sesion.setAttribute("mensaje", mensajeError);
                 sesion.setAttribute("tipoMensaje", "error");
             }
-            response.sendRedirect(request.getContextPath() + "/panelAdministrador.jsp");
+            response.sendRedirect(request.getContextPath() + "/fragmentos/error.jsp");
         }
     }
 }

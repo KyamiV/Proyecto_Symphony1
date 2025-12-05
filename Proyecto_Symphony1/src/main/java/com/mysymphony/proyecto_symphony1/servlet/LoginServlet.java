@@ -30,6 +30,13 @@ import java.util.Map;
 public class LoginServlet extends HttpServlet {
 
     @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // Evita error 405: redirige siempre al formulario de login
+        response.sendRedirect("login.jsp");
+    }
+
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -38,8 +45,7 @@ public class LoginServlet extends HttpServlet {
 
         // Validación básica
         if (correo == null || clave == null || correo.trim().isEmpty() || clave.trim().isEmpty()) {
-            request.setAttribute("error", "⚠️ Debes ingresar correo y contraseña.");
-            request.getRequestDispatcher("login.jsp").forward(request, response);
+            manejarRespuesta(request, response, false, "⚠️ Debes ingresar correo y contraseña.", null);
             return;
         }
 
@@ -54,15 +60,12 @@ public class LoginServlet extends HttpServlet {
             Usuario usuario = dao.validarUsuario(correo, claveHash);
 
             if (usuario == null) {
-                request.setAttribute("error", "❌ Credenciales inválidas.");
-                request.getRequestDispatcher("login.jsp").forward(request, response);
+                manejarRespuesta(request, response, false, "❌ Credenciales inválidas.", null);
                 return;
             }
 
             // Validación estado del usuario
             if (usuario.getEstado() != null && !"activo".equalsIgnoreCase(usuario.getEstado())) {
-
-                // Auditoría
                 Map<String, String> reg = new HashMap<>();
                 reg.put("usuario", usuario.getCorreo());
                 reg.put("rol", usuario.getRol());
@@ -71,8 +74,7 @@ public class LoginServlet extends HttpServlet {
                 reg.put("ip_origen", request.getRemoteAddr());
                 new AuditoriaDAO(conn).registrarAccion(reg);
 
-                request.setAttribute("error", "❌ Credenciales inválidas.");
-                request.getRequestDispatcher("login.jsp").forward(request, response);
+                manejarRespuesta(request, response, false, "❌ Cuenta inactiva.", null);
                 return;
             }
 
@@ -85,16 +87,16 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("nombreActivo", usuario.getNombre());
             session.setAttribute("rolActivo", usuario.getRol());
 
-            // 🔑 Ajuste clave: guardar siempre el ID correcto según rol
+            // Guardar ID según rol
             switch (usuario.getRol().toLowerCase()) {
                 case "estudiante":
-                    session.setAttribute("idActivo", usuario.getIdEstudiante()); // ID real de estudiante
+                    session.setAttribute("idActivo", usuario.getIdEstudiante());
                     break;
                 case "docente":
-                    session.setAttribute("idActivo", usuario.getIdDocente());    // ID real de docente
+                    session.setAttribute("idActivo", usuario.getIdDocente());
                     break;
                 case "administrador":
-                    session.setAttribute("idActivo", usuario.getIdUsuario());   // ID genérico de usuario
+                    session.setAttribute("idActivo", usuario.getIdUsuario());
                     break;
             }
 
@@ -107,33 +109,57 @@ public class LoginServlet extends HttpServlet {
             registro.put("ip_origen", request.getRemoteAddr());
             new AuditoriaDAO(conn).registrarAccion(registro);
 
-            // Redirección según rol
-            switch (usuario.getRol().toLowerCase()) {
-                case "estudiante":
-                    response.sendRedirect("PanelEstudianteServlet");
-                    break;
-                case "docente":
-                    response.sendRedirect("PanelDocenteServlet");
-                    break;
-                case "administrador":
-                    response.sendRedirect("PanelAdministradorServlet");
-                    break;
-                default:
-                    Map<String, String> reg2 = new HashMap<>();
-                    reg2.put("usuario", usuario.getCorreo());
-                    reg2.put("rol", usuario.getRol());
-                    reg2.put("modulo", "Inicio de sesión");
-                    reg2.put("accion", "Rol no reconocido: " + usuario.getRol());
-                    reg2.put("ip_origen", request.getRemoteAddr());
-                    new AuditoriaDAO(conn).registrarAccion(reg2);
-
-                    response.sendRedirect("login.jsp?error=rol");
-            }
+            // Manejo de respuesta según rol
+            manejarRespuesta(request, response, true, "Inicio de sesión exitoso", usuario);
 
         } catch (Exception e) {
             System.err.println("❌ Error en LoginServlet: " + e.getMessage());
-            request.setAttribute("error", "❌ Error interno en el servidor.");
-            request.getRequestDispatcher("login.jsp").forward(request, response);
+            manejarRespuesta(request, response, false, "❌ Error interno en el servidor.", null);
+        }
+    }
+
+    /**
+     * Método auxiliar para manejar respuesta en JSP o JSON según el header Accept
+     */
+    private void manejarRespuesta(HttpServletRequest request, HttpServletResponse response,
+                                  boolean exito, String mensaje, Usuario usuario) throws IOException, ServletException {
+        String acceptHeader = request.getHeader("Accept");
+        boolean quiereJson = acceptHeader != null && acceptHeader.contains("application/json");
+
+        if (quiereJson) {
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+
+            StringBuilder json = new StringBuilder("{");
+            json.append("\"status\":\"").append(exito ? "ok" : "error").append("\",");
+            json.append("\"mensaje\":\"").append(mensaje).append("\"");
+
+            if (usuario != null) {
+                json.append(",\"usuario\":\"").append(usuario.getCorreo()).append("\",");
+                json.append("\"rol\":\"").append(usuario.getRol()).append("\"");
+            }
+            json.append("}");
+
+            response.getWriter().write(json.toString());
+        } else {
+            if (exito && usuario != null) {
+                switch (usuario.getRol().toLowerCase()) {
+                    case "estudiante":
+                        response.sendRedirect("PanelEstudianteServlet");
+                        break;
+                    case "docente":
+                        response.sendRedirect("PanelDocenteServlet");
+                        break;
+                    case "administrador":
+                        response.sendRedirect("PanelAdministradorServlet");
+                        break;
+                    default:
+                        response.sendRedirect("login.jsp?error=rol");
+                }
+            } else {
+                request.setAttribute("error", mensaje);
+                request.getRequestDispatcher("login.jsp").forward(request, response);
+            }
         }
     }
 }

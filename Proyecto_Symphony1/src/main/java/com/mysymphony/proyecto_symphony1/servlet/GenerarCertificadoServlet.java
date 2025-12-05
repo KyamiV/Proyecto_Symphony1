@@ -43,7 +43,7 @@ public class GenerarCertificadoServlet extends HttpServlet {
         if (tablaIdParam == null) {
             request.setAttribute("mensaje", "❌ No se especificó la tabla.");
             request.setAttribute("tipoMensaje", "danger");
-            request.getRequestDispatcher("/admin/tablasValidadas.jsp").forward(request, response);
+            request.getRequestDispatcher("/adminitrador/tablasValidadas.jsp").forward(request, response);
             return;
         }
 
@@ -107,12 +107,31 @@ public class GenerarCertificadoServlet extends HttpServlet {
             System.err.println("❌ Error al generar certificado: " + e.getMessage());
             sesion.setAttribute("mensaje", "❌ Error al generar certificado.");
             sesion.setAttribute("tipoMensaje", "danger");
-            response.sendRedirect(request.getContextPath() + "/admin/tablasValidadas.jsp");
+            response.sendRedirect(request.getContextPath() + "/administrador/tablasValidadas.jsp");
             return;
         }
 
-        // 📤 Enviar datos a la vista del certificado
+        // 🔎 Validación de salida JSON para Postman
+        String acceptHeader = request.getHeader("Accept");
+        if (acceptHeader != null && acceptHeader.contains("application/json")) {
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+
+            StringBuilder json = new StringBuilder("{");
+            for (Map.Entry<String, String> entry : certificado.entrySet()) {
+                json.append("\"").append(entry.getKey()).append("\":\"").append(entry.getValue()).append("\",");
+            }
+            if (json.charAt(json.length() - 1) == ',') {
+                json.deleteCharAt(json.length() - 1);
+            }
+            json.append("}");
+
+            response.getWriter().write(json.toString());
+            return; // 👈 salir para no redirigir
+        }
+
+        // 👉 Si no es JSON (ej. navegador), redirigir a la vista JSP
         request.setAttribute("certificado", certificado);
-        request.getRequestDispatcher("/admin/certificado.jsp").forward(request, response);
+        request.getRequestDispatcher("/administrador/certificado.jsp").forward(request, response);
     }
 }

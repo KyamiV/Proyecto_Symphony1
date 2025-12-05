@@ -155,7 +155,18 @@ public class RegistrarUsuarioServlet extends HttpServlet {
             e.printStackTrace();
             mensaje = "❌ Error al registrar usuario.";
         }
+      
 
+        // ✅ Respuesta JSON si la petición viene de Postman
+        String acceptHeader = request.getHeader("Accept");
+        if (acceptHeader != null && acceptHeader.contains("application/json")) {
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write("{\"status\":\"ok\",\"mensaje\":\"" + mensaje + "\"}");
+            return; // 👈 importante: salir para no redirigir
+        }
+
+        // 👉 Si no es JSON (ej. navegador), redirigir normalmente
         if (sesion != null) {
             sesion.setAttribute("mensaje", mensaje);
         }

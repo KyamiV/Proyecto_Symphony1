@@ -74,31 +74,35 @@ public class BitacoraDAO {
      * @return Lista de registros con usuario, rol, módulo, acción y fecha_registro
      */
     public List<Map<String, String>> obtenerTodos() {
-        List<Map<String, String>> lista = new ArrayList<>();
-        String sql = "SELECT id_accion, usuario, rol, modulo, accion, fecha_registro " +
-                     "FROM bitacora_validaciones ORDER BY fecha_registro DESC";
+    List<Map<String, String>> lista = new ArrayList<>();
+    String sql = "SELECT id_accion, usuario, rol, modulo, accion, fecha_registro " +
+                 "FROM bitacora_validaciones ORDER BY fecha_registro DESC";
 
-        try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+    try (Connection con = Conexion.getConnection();
+         PreparedStatement ps = con.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
 
-            while (rs.next()) {
-                Map<String, String> fila = new HashMap<>();
-                fila.put("id_accion", String.valueOf(rs.getInt("id_accion")));
-                fila.put("usuario", rs.getString("usuario"));
-                fila.put("rol", rs.getString("rol"));
-                fila.put("modulo", rs.getString("modulo"));
-                fila.put("accion", rs.getString("accion"));
-                fila.put("fecha_registro", rs.getString("fecha_registro"));
-                lista.add(fila);
-            }
+        while (rs.next()) {
+            Map<String, String> fila = new HashMap<>();
+            fila.put("id_accion", String.valueOf(rs.getInt("id_accion")));
+            fila.put("usuario", rs.getString("usuario"));
+            fila.put("rol", rs.getString("rol"));
+            fila.put("modulo", rs.getString("modulo"));
+            fila.put("accion", rs.getString("accion"));
 
-        } catch (SQLException e) {
-            System.err.println("❌ Error al obtener bitácora: " + e.getMessage());
+            // ✅ Corrección aquí
+            Timestamp ts = rs.getTimestamp("fecha_registro");
+            fila.put("fecha_registro", (ts != null) ? ts.toString() : "");
+
+            lista.add(fila);
         }
 
-        return lista;
+    } catch (SQLException e) {
+        System.err.println("❌ Error al obtener bitácora: " + e.getMessage());
     }
+
+    return lista;
+}
 
     /**
      * UPDATE → Actualiza la descripción de una acción registrada.
