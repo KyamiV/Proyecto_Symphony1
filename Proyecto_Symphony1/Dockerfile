@@ -6,4 +6,4 @@ RUN mvn clean package -DskipTests
 
 # Etapa 2: Desplegar en Tomcat
 FROM tomcat:9.0-jdk17
-COPY --from=build /app/target/Proyecto_Symphony1.war /usr/local/tomcat/webapps/ROOT.war
+COPY --from=build /app/target/*.war /usr/local/tomcat/webapps/ROOT.war
