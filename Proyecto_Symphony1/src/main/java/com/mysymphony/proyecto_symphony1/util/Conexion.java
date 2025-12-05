@@ -16,17 +16,16 @@ import java.sql.SQLException;
 public class Conexion {
 
     // 🔹 Configuración de conexión mediante variables de entorno
-    private static final String HOST = System.getenv("DB_HOST");   // Ej: mysql.render.com o host.docker.internal
-    private static final String PORT = System.getenv("DB_PORT");   // Ej: 3306 o 3307
-    private static final String DB   = System.getenv("DB_NAME");   // Ej: symphony_db
-    private static final String USER = System.getenv("DB_USER");   // Ej: root
-    private static final String PASS = System.getenv("DB_PASS");   // Ej: contraseña
+    private static final String HOST = System.getenv("DB_HOST");     // Ej: mysql.render.com o host.docker.internal
+    private static final String PORT = System.getenv("DB_PORT");     // Ej: 3306 o 3307
+    private static final String DB   = System.getenv("DB_NAME");     // Ej: symphony_db
+    private static final String USER = System.getenv("DB_USER");     // Ej: root
+    private static final String PASS = System.getenv("DB_PASS");     // Ej: clave_segura_123
 
     // 🔹 Construcción dinámica de la URL JDBC
-    private static final String URL = String.format(
-        "jdbc:mysql://%s:%s/%s?useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8",
-        HOST, PORT, DB
-    );
+    private static final String URL =
+        "jdbc:mysql://" + HOST + ":" + PORT + "/" + DB +
+        "?useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8";
 
     /**
      * Obtiene una conexión activa a la base de datos.
