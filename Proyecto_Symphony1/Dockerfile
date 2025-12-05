@@ -1,7 +1,7 @@
 # Etapa 1: Compilar con Maven
 FROM maven:3.8.5-openjdk-17 AS build
 WORKDIR /app
-COPY Proyecto_Symphony1/Proyecto_Symphony1 .   #    Copia solo la carpeta con pom.xml
+COPY . .   # 👈 Copia todo el contenido de esta carpeta (incluye pom.xml y src/)
 RUN mvn clean package -DskipTests
 
 # Etapa 2: Usar Tomcat y desplegar el WAR
