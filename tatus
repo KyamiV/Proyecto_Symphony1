@@ -1,0 +1,159 @@
+[1mdiff --git a/Proyecto_Symphony1/nb-configuration.xml b/Proyecto_Symphony1/nb-configuration.xml[m
+[1mindex 4da1f6c..32de143 100644[m
+[1m--- a/Proyecto_Symphony1/nb-configuration.xml[m
+[1m+++ b/Proyecto_Symphony1/nb-configuration.xml[m
+[36m@@ -14,5 +14,6 @@[m [mThat way multiple projects can share the same settings (useful for formatting ru[m
+ Any value defined here will override the pom.xml file value but is only applicable to the current project.[m
+ -->[m
+         <org-netbeans-modules-maven-jaxws.rest_2e_config_2e_type>ide</org-netbeans-modules-maven-jaxws.rest_2e_config_2e_type>[m
+[32m+[m[32m        <org-netbeans-modules-maven-j2ee.netbeans_2e_hint_2e_deploy_2e_server>Tomcat</org-netbeans-modules-maven-j2ee.netbeans_2e_hint_2e_deploy_2e_server>[m
+     </properties>[m
+ </project-shared-configuration>[m
+[1mdiff --git a/Proyecto_Symphony1/pom.xml b/Proyecto_Symphony1/pom.xml[m
+[1mindex c33bb66..088a53c 100644[m
+[1m--- a/Proyecto_Symphony1/pom.xml[m
+[1m+++ b/Proyecto_Symphony1/pom.xml[m
+[36m@@ -1,96 +1,90 @@[m
+ <project xmlns="http://maven.apache.org/POM/4.0.0"[m
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"[m
+          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">[m
+[31m-         [m
+[32m+[m
+     <modelVersion>4.0.0</modelVersion>[m
+     <groupId>com.mysymphony</groupId>[m
+     <artifactId>Proyecto_Symphony1</artifactId>[m
+[31m-    <version>1</version>[m
+[32m+[m[32m    <version>1.0</version>[m
+     <packaging>war</packaging>[m
+[31m-    <name>Proyecto_Symphony1-1</name>[m
+[32m+[m[32m    <name>Proyecto_Symphony1</name>[m
+ [m
+     <properties>[m
+         <maven.compiler.source>1.8</maven.compiler.source>[m
+         <maven.compiler.target>1.8</maven.compiler.target>[m
+         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>[m
+[32m+[m[32m        <jakartaee.version>8.0.0</jakartaee.version>[m
+         <failOnMissingWebXml>false</failOnMissingWebXml>[m
+[31m-        <jakartaee>8.0.0</jakartaee>[m
+     </properties>[m
+ [m
+[31m-        <dependencies>[m
+[31m-            <!-- Jakarta EE API -->[m
+[31m-            <dependency>[m
+[31m-                <groupId>jakarta.platform</groupId>[m
+[31m-                <artifactId>jakarta.jakartaee-api</artifactId>[m
+[31m-                <version>${jakartaee}</version>[m
+[31m-                <scope>provided</scope>[m
+[31m-            </dependency>[m
+[32m+[m[32m    <dependencies>[m
+[32m+[m[32m        <!-- Jakarta EE API -->[m
+[32m+[m[32m        <dependency>[m
+[32m+[m[32m            <groupId>jakarta.platform</groupId>[m
+[32m+[m[32m            <artifactId>jakarta.jakartaee-api</artifactId>[m
+[32m+[m[32m            <version>${jakartaee.version}</version>[m
+[32m+[m[32m            <scope>provided</scope>[m
+[32m+[m[32m        </dependency>[m
+[32m+[m
+[32m+[m[32m        <!-- JSTL -->[m
+[32m+[m[32m        <dependency>[m
+[32m+[m[32m            <groupId>javax.servlet</groupId>[m
+[32m+[m[32m            <artifactId>jstl</artifactId>[m
+[32m+[m[32m            <version>1.2</version>[m
+[32m+[m[32m        </dependency>[m
+ [m
+[31m-            <!-- JSTL para etiquetas como <c:if> -->[m
+[31m-                <dependency>[m
+[31m-                    <groupId>javax.servlet</groupId>[m
+[31m-                    <artifactId>jstl</artifactId>[m
+[31m-                    <version>1.2</version>[m
+[31m-                </dependency>[m
+[31m-                [m
+[31m-  <!-- Otras dependencias -->[m
+[32m+[m[32m        <!-- MySQL JDBC Driver -->[m
+[32m+[m[32m        <dependency>[m
+[32m+[m[32m            <groupId>com.mysql</groupId>[m
+[32m+[m[32m            <artifactId>mysql-connector-j</artifactId>[m
+[32m+[m[32m            <version>8.3.0</version>[m
+[32m+[m[32m        </dependency>[m
+[32m+[m[32m    </dependencies>[m
+ [m
+[31m-                <dependency>[m
+[31m-                  <groupId>com.mysql</groupId>[m
+[31m-                  <artifactId>mysql-connector-j</artifactId>[m
+[31m-                  <version>8.3.0</version>[m
+[31m-                </dependency>[m
+[31m-        </dependencies>[m
+[31m-        [m
+     <build>[m
+[32m+[m[32m        <resources>[m
+[32m+[m[32m            <resource>[m
+[32m+[m[32m                <directory>src/main/resources</directory>[m
+[32m+[m[32m                <includes>[m
+[32m+[m[32m                    <include>**/*.properties</include>[m
+[32m+[m[32m                    <include>**/*.xml</include>[m
+[32m+[m[32m                </includes>[m
+[32m+[m[32m            </resource>[m
+[32m+[m[32m        </resources>[m
+[32m+[m
+         <plugins>[m
+[31m-            <!-- Plugin de compilación actualizado -->[m
+[32m+[m[32m            <!-- Java Compiler Plugin -->[m
+             <plugin>[m
+                 <groupId>org.apache.maven.plugins</groupId>[m
+                 <artifactId>maven-compiler-plugin</artifactId>[m
+                 <version>3.11.0</version>[m
+                 <configuration>[m
+[31m-                    <source>1.8</source>[m
+[31m-                    <target>1.8</target>[m
+[32m+[m[32m                    <source>${maven.compiler.source}</source>[m
+[32m+[m[32m                    <target>${maven.compiler.target}</target>[m
+                 </configuration>[m
+             </plugin>[m
+ [m
+[31m-            <!-- Plugin WAR actualizado para compatibilidad con JDK moderno -->[m
+[32m+[m[32m            <!-- WAR Plugin -->[m
+             <plugin>[m
+                 <groupId>org.apache.maven.plugins</groupId>[m
+                 <artifactId>maven-war-plugin</artifactId>[m
+                 <version>3.4.0</version>[m
+                 <configuration>[m
+[31m-                    <failOnMissingWebXml>false</failOnMissingWebXml>[m
+[32m+[m[32m                    <failOnMissingWebXml>${failOnMissingWebXml}</failOnMissingWebXml>[m
+[32m+[m[32m                    <webResources>[m
+[32m+[m[32m                        <resource>[m
+[32m+[m[32m                            <directory>src/main/webapp</directory>[m
+[32m+[m[32m                            <targetPath/>[m
+[32m+[m[32m                            <includes>[m
+[32m+[m[32m                                <include>**/*.jsp</include>[m
+[32m+[m[32m                                <include>**/*.html</include>[m
+[32m+[m[32m                                <include>**/*.css</include>[m
+[32m+[m[32m                                <include>**/*.js</include>[m
+[32m+[m[32m                            </includes>[m
+[32m+[m[32m                        </resource>[m
+[32m+[m[32m                    </webResources>[m
+                 </configuration>[m
+             </plugin>[m
+[31m-[m
+[31m-            <!-- Plugin para copiar dependencias Jakarta -->[m
+[31m-            <plugin>[m
+[31m-                <groupId>org.apache.maven.plugins</groupId>[m
+[31m-                <artifactId>maven-dependency-plugin</artifactId>[m
+[31m-                <version>3.6.0</version>[m
+[31m-                <executions>[m
+[31m-                    <execution>[m
+[31m-                        <phase>validate</phase>[m
+[31m-                        <goals>[m
+[31m-                            <goal>copy</goal>[m
+[31m-                        </goals>[m
+[31m-                        <configuration>[m
+[31m-                            <outputDirectory>${project.build.directory}/lib</outputDirectory>[m
+[31m-                            <silent>true</silent>[m
+[31m-                            <artifactItems>[m
+[31m-                                <artifactItem>[m
+[31m-                                    <groupId>jakarta.platform</groupId>[m
+[31m-                                    <artifactId>jakarta.jakartaee-api</artifactId>[m
+[31m-                                    <version>${jakartaee}</version>[m
+[31m-                                    <type>jar</type>[m
+[31m-                                </artifactItem>[m
+[31m-                            </artifactItems>[m
+[31m-                        </
