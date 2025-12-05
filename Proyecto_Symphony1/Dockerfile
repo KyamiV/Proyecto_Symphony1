@@ -1,5 +1,9 @@
+# Etapa 1: Compilar con Maven
+FROM maven:3.8.5-openjdk-17 AS build
+WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
+
+# Etapa 2: Usar Tomcat y desplegar el WAR
 FROM tomcat:9.0-jdk17
-# Copia tu WAR al directorio de despliegue de Tomcat
-COPY target/Proyecto_Symphony1-1.0.war /usr/local/tomcat/webapps/Proyecto_Symphony1.war
-EXPOSE 8080
-CMD ["catalina.sh", "run"]
+COPY --from=build /app/Proyecto_Symphony1/target/Proyecto_Symphony1-1.0.war /usr/local/tomcat/webapps/Proyecto_Symphony1.war
