@@ -2,7 +2,7 @@
 FROM maven:3.8.5-openjdk-17 AS build
 WORKDIR /app
 COPY . .
-WORKDIR /app/Proyecto_Symphony1/Proyecto_Symphony1
+WORKDIR /app/Proyecto_Symphony1/Proyecto_Symphony1   # 👈 Aquí está tu pom.xml
 RUN mvn clean package -DskipTests
 
 # Etapa 2: Usar Tomcat y desplegar el WAR
