@@ -15,12 +15,18 @@ import java.sql.SQLException;
  */
 public class Conexion {
 
-    // 🔹 Configuración de conexión
-    // Usa host.docker.internal para que el contenedor Docker acceda al MySQL de tu PC
-    private static final String URL =
-        "jdbc:mysql://host.docker.internal:3307/symphony_db?useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8";
-    private static final String USUARIO = "root";
-    private static final String CLAVE = ""; 
+    // 🔹 Configuración de conexión mediante variables de entorno
+    private static final String HOST = System.getenv("DB_HOST");   // Ej: mysql.render.com o host.docker.internal
+    private static final String PORT = System.getenv("DB_PORT");   // Ej: 3306 o 3307
+    private static final String DB   = System.getenv("DB_NAME");   // Ej: symphony_db
+    private static final String USER = System.getenv("DB_USER");   // Ej: root
+    private static final String PASS = System.getenv("DB_PASS");   // Ej: contraseña
+
+    // 🔹 Construcción dinámica de la URL JDBC
+    private static final String URL = String.format(
+        "jdbc:mysql://%s:%s/%s?useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8",
+        HOST, PORT, DB
+    );
 
     /**
      * Obtiene una conexión activa a la base de datos.
@@ -32,7 +38,7 @@ public class Conexion {
             Class.forName("com.mysql.cj.jdbc.Driver");
 
             // Crear conexión
-            Connection conn = DriverManager.getConnection(URL, USUARIO, CLAVE);
+            Connection conn = DriverManager.getConnection(URL, USER, PASS);
             System.out.println("✅ Conexión establecida con la base de datos.");
             return conn;
 
