@@ -1,6 +1,6 @@
 FROM maven:3.8.5-openjdk-17 AS build
 WORKDIR /app
-COPY . .
+COPY Proyecto_Symphony1/Proyecto_Symphony1/ .   # copia la subcarpeta donde está el pom.xml
 RUN mvn clean package -DskipTests
 
 FROM tomcat:9.0-jdk17
