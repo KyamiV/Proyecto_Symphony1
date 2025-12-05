@@ -16,10 +16,11 @@ import java.sql.SQLException;
 public class Conexion {
 
     // 🔹 Configuración de conexión
+    // Usa host.docker.internal para que el contenedor Docker acceda al MySQL de tu PC
     private static final String URL =
-        "jdbc:mysql://localhost:3307/symphony_db?useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8";
+        "jdbc:mysql://host.docker.internal:3307/symphony_db?useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8";
     private static final String USUARIO = "root";
-    private static final String CLAVE = "";
+    private static final String CLAVE = ""; 
 
     /**
      * Obtiene una conexión activa a la base de datos.
