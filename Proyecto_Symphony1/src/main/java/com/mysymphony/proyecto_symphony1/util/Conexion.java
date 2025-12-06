@@ -21,7 +21,7 @@ public class Conexion {
     private static final String PORT = System.getenv("DB_PORT");     // Ej: 3307
     private static final String DB   = System.getenv("DB_NAME");     // Ej: symphony_db
     private static final String USER = System.getenv("DB_USER");     // Ej: root
-    private static final String PASS = System.getenv("DB_PASS");     // Ej: Admin1234*
+    private static final String PASS = System.getenv("DB_PASS");     // Ej: Admin1234* o vacío
 
     // 🔹 Construcción dinámica de la URL JDBC
     private static final String URL =
@@ -41,8 +41,8 @@ public class Conexion {
                 // Cargar el driver JDBC
                 Class.forName("com.mysql.cj.jdbc.Driver");
 
-                // Crear conexión
-                Connection conn = DriverManager.getConnection(URL, USER, PASS);
+                // Crear conexión (si PASS es null, se pasa como cadena vacía)
+                Connection conn = DriverManager.getConnection(URL, USER, PASS != null ? PASS : "");
                 System.out.println("✅ Conexión establecida con la base de datos en intento " + i);
                 return conn;
 
