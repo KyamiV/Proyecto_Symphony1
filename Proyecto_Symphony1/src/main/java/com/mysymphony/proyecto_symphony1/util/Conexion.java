@@ -12,15 +12,16 @@ import java.sql.SQLException;
 /**
  * Clase utilitaria para gestionar la conexión JDBC con la base de datos MySQL.
  * Autor: Camila
+ * Incluye reintentos automáticos para evitar fallo si la BD tarda en arrancar.
  */
 public class Conexion {
 
     // 🔹 Configuración de conexión mediante variables de entorno
-    private static final String HOST = System.getenv("DB_HOST");     // Ej: mysql.render.com o host.docker.internal
-    private static final String PORT = System.getenv("DB_PORT");     // Ej: 3306 o 3307
+    private static final String HOST = System.getenv("DB_HOST");     // Ej: mysql-symphony
+    private static final String PORT = System.getenv("DB_PORT");     // Ej: 3307
     private static final String DB   = System.getenv("DB_NAME");     // Ej: symphony_db
     private static final String USER = System.getenv("DB_USER");     // Ej: root
-    private static final String PASS = System.getenv("DB_PASS");     // Ej: clave_segura_123
+    private static final String PASS = System.getenv("DB_PASS");     // Ej: Admin1234*
 
     // 🔹 Construcción dinámica de la URL JDBC
     private static final String URL =
@@ -28,26 +29,41 @@ public class Conexion {
         "?useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8";
 
     /**
-     * Obtiene una conexión activa a la base de datos.
+     * Obtiene una conexión activa a la base de datos con reintentos.
      * @return Connection activa o null si falla
      */
     public static Connection getConnection() {
-        try {
-            // Cargar el driver JDBC
-            Class.forName("com.mysql.cj.jdbc.Driver");
+        int intentos = 5;          // número máximo de intentos
+        int esperaMs = 5000;       // tiempo de espera entre intentos (5 segundos)
 
-            // Crear conexión
-            Connection conn = DriverManager.getConnection(URL, USER, PASS);
-            System.out.println("✅ Conexión establecida con la base de datos.");
-            return conn;
+        for (int i = 1; i <= intentos; i++) {
+            try {
+                // Cargar el driver JDBC
+                Class.forName("com.mysql.cj.jdbc.Driver");
 
-        } catch (ClassNotFoundException e) {
-            System.err.println("❌ Driver JDBC no encontrado: " + e.getMessage());
-            return null;
-        } catch (SQLException e) {
-            System.err.println("❌ Error al conectar con la base de datos: " + e.getMessage());
-            return null;
+                // Crear conexión
+                Connection conn = DriverManager.getConnection(URL, USER, PASS);
+                System.out.println("✅ Conexión establecida con la base de datos en intento " + i);
+                return conn;
+
+            } catch (ClassNotFoundException e) {
+                System.err.println("❌ Driver JDBC no encontrado: " + e.getMessage());
+                return null; // sin driver no tiene sentido reintentar
+            } catch (SQLException e) {
+                System.err.println("❌ Error al conectar (intento " + i + "): " + e.getMessage());
+                if (i < intentos) {
+                    try {
+                        System.out.println("⏳ Reintentando conexión en " + (esperaMs / 1000) + " segundos...");
+                        Thread.sleep(esperaMs);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        return null;
+                    }
+                }
+            }
         }
+        System.err.println("❌ No se pudo establecer conexión tras " + intentos + " intentos.");
+        return null;
     }
 
     /**

@@ -56,6 +56,12 @@ public class LoginServlet extends HttpServlet {
 
         try (Connection conn = Conexion.getConnection()) {
 
+            if (conn == null) {
+                // 🚨 Conexión fallida: mostrar error claro
+                manejarRespuesta(request, response, false, "❌ Error: No se pudo conectar a la base de datos.", null);
+                return;
+            }
+
             UsuarioDAO dao = new UsuarioDAO(conn);
             Usuario usuario = dao.validarUsuario(correo, claveHash);
 
