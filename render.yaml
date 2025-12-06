@@ -1,21 +1,21 @@
 services:
   - type: web
-    name: symphony-app
+    name: mysql_symphony
     env: docker
     plan: free
     dockerfilePath: Dockerfile
     autoDeploy: true
     envVars:
       - key: DB_HOST
-        value: mysql.railway.internal
+        value: containers-us-west-123.railway.app   # ← host público
       - key: DB_PORT
-        value: 3306
+        value: 3306                                # ← puerto externo
       - key: DB_NAME
         value: railway
       - key: DB_USER
         value: root
       - key: DB_PASS
-        value: IEYQgcuaBiFpyUudFHSnFXZpmZEmXkMl
+        value: IEYQgcuaBiFpyUudFHSnFXZpmZEmXkMl     # ← contraseña generada
     ports:
       - port: 8080
         protocol: tcp
