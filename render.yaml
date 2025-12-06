@@ -9,20 +9,23 @@ services:
       - key: DB_HOST
         value: mysql-symphony
       - key: DB_PORT
-        value: 3307
+        value: 3306
       - key: DB_NAME
         value: symphony_db
       - key: DB_USER
         value: root
       - key: DB_PASS
         value: Admin1234*
+    ports:
+      - port: 8080
+        protocol: tcp
 
-  - type: web
+  - type: pserv
     name: mysql-symphony
     env: docker
     plan: free
     dockerfilePath: Dockerfile.mysql
     autoDeploy: false
     ports:
-      - port: 3307
+      - port: 3306
         protocol: tcp
