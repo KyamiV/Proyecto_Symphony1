@@ -9,4 +9,4 @@ ENV MYSQL_ROOT_PASSWORD=Admin1234*
 # COPY mysql-symphony/symphony_db.sql /docker-entrypoint-initdb.d/
 
 # Exponer el puerto estándar
-EXPOSE 3307
+EXPOSE 3306
