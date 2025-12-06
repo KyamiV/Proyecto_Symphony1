@@ -18,15 +18,15 @@ public class Conexion {
 
     // 🔹 Configuración de conexión mediante variables de entorno
     private static final String HOST = System.getenv("DB_HOST");     // Ej: mysql-symphony
-    private static final String PORT = System.getenv("DB_PORT");     // Ej: 3307
+    private static final String PORT = System.getenv("DB_PORT");     // Ej: 3306
     private static final String DB   = System.getenv("DB_NAME");     // Ej: symphony_db
     private static final String USER = System.getenv("DB_USER");     // Ej: root
     private static final String PASS = System.getenv("DB_PASS");     // Ej: Admin1234* o vacío
 
     // 🔹 Construcción dinámica de la URL JDBC
     private static final String URL =
-    "jdbc:mysql://" + HOST + ":" + PORT + "/" + DB +
-    "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8";
+        "jdbc:mysql://" + HOST + ":" + PORT + "/" + DB +
+        "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8";
 
     /**
      * Obtiene una conexión activa a la base de datos con reintentos.
@@ -34,7 +34,7 @@ public class Conexion {
      */
     public static Connection getConnection() {
         int intentos = 10;          // número máximo de intentos
-        int esperaMs = 10000;       // tiempo de espera entre intentos (5 segundos)
+        int esperaMs = 10000;       // tiempo de espera entre intentos (10 segundos)
 
         for (int i = 1; i <= intentos; i++) {
             try {
