@@ -25,16 +25,16 @@ public class Conexion {
 
     // 🔹 Construcción dinámica de la URL JDBC
     private static final String URL =
-        "jdbc:mysql://" + HOST + ":" + PORT + "/" + DB +
-        "?useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8";
+    "jdbc:mysql://" + HOST + ":" + PORT + "/" + DB +
+    "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8";
 
     /**
      * Obtiene una conexión activa a la base de datos con reintentos.
      * @return Connection activa o null si falla
      */
     public static Connection getConnection() {
-        int intentos = 5;          // número máximo de intentos
-        int esperaMs = 5000;       // tiempo de espera entre intentos (5 segundos)
+        int intentos = 10;          // número máximo de intentos
+        int esperaMs = 10000;       // tiempo de espera entre intentos (5 segundos)
 
         for (int i = 1; i <= intentos; i++) {
             try {
