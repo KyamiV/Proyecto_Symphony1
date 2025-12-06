@@ -38,6 +38,15 @@ public class Conexion {
 
         for (int i = 1; i <= intentos; i++) {
             try {
+                // 🔍 Debug: imprimir variables de entorno y URL
+                System.out.println("🔍 Intento " + i);
+                System.out.println("DB_HOST=" + HOST);
+                System.out.println("DB_PORT=" + PORT);
+                System.out.println("DB_NAME=" + DB);
+                System.out.println("DB_USER=" + USER);
+                System.out.println("DB_PASS=" + (PASS != null && !PASS.isEmpty() ? "********" : "(vacío)"));
+                System.out.println("URL JDBC=" + URL);
+
                 // Cargar el driver JDBC
                 Class.forName("com.mysql.cj.jdbc.Driver");
 
