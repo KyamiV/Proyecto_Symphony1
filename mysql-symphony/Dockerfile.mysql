@@ -1,0 +1,13 @@
+# Imagen oficial de MySQL
+FROM mysql:8.0
+
+# Puerto que debe coincidir con DB_PORT
+EXPOSE 3307
+
+# Variables de entorno para inicializar la BD
+ENV MYSQL_ROOT_PASSWORD=Admin1234*
+ENV MYSQL_DATABASE=symphony_db
+
+# Opcional: inicializar estructura de tablas
+# Copia tu script SQL al contenedor para que se ejecute al arrancar
+COPY estructura_completa.sql /docker-entrypoint-initdb.d/
