@@ -151,28 +151,24 @@ public class DocenteDAO {
 
     // 🔹 Insertar nuevo docente
     public boolean insertarDocente(Docente d) {
-        String sql = "INSERT INTO docentes (nombre, apellido, correo, telefono, direccion, fecha_ingreso, estado) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, d.getNombre());
-            ps.setString(2, d.getApellido());
-            ps.setString(3, d.getCorreo());
-            ps.setString(4, d.getTelefono());
-            ps.setString(5, d.getDireccion());
-
-            if (d.getFechaIngreso() != null) {
-                ps.setDate(6, d.getFechaIngreso());
-            } else {
-                ps.setNull(6, Types.DATE);
-            }
-
-            ps.setString(7, d.getEstado());
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            System.err.println("❌ Error al insertar docente: " + e.getMessage());
-            return false;
-        }
+    String sql = "INSERT INTO docentes (id_usuario, nombre, apellido, correo, telefono, direccion, fecha_ingreso, estado, nivel_tecnico) " +
+                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, d.getIdUsuario()); // FK hacia usuarios
+        ps.setString(2, d.getNombre());
+        ps.setString(3, d.getApellido());
+        ps.setString(4, d.getCorreo());
+        ps.setString(5, d.getTelefono());
+        ps.setString(6, d.getDireccion());
+        ps.setDate(7, d.getFechaIngreso() != null ? d.getFechaIngreso() : new java.sql.Date(System.currentTimeMillis()));
+        ps.setString(8, d.getEstado());
+        ps.setString(9, d.getNivelTecnico());
+        return ps.executeUpdate() > 0;
+    } catch (SQLException e) {
+        System.err.println("❌ Error al insertar docente: " + e.getMessage());
+        return false;
     }
+}
 
     // 🔹 Actualizar docente existente
     public boolean actualizarDocente(Docente d) {

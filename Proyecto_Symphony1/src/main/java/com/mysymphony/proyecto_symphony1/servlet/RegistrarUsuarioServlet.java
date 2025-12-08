@@ -119,6 +119,8 @@ public class RegistrarUsuarioServlet extends HttpServlet {
                         "Gestión de usuarios"
                 );
 
+                int idUsuario = dao.obtenerUltimoId();
+
                 // ✅ Crear entrada en docentes si el rol es docente
                 if ("docente".equalsIgnoreCase(nuevo.getRol())) {
                     String[] partes = nuevo.getNombre().split(" ", 2);
@@ -129,17 +131,40 @@ public class RegistrarUsuarioServlet extends HttpServlet {
                                         "VALUES (?, ?, ?, ?, ?, NOW(), ?, ?, ?)";
 
                     try (PreparedStatement ps = conn.prepareStatement(sqlDocente)) {
-                        ps.setInt(1, dao.obtenerUltimoId()); // 🔑 id_usuario recién creado en usuarios
+                        ps.setInt(1, idUsuario);
                         ps.setString(2, nombreDocente);
                         ps.setString(3, apellidoDocente);
                         ps.setString(4, nuevo.getCorreo());
-                        ps.setString(5, ""); // especialidad opcional, vacío por ahora
+                        ps.setString(5, ""); // especialidad opcional
                         ps.setString(6, ""); // dirección opcional
                         ps.setString(7, ""); // teléfono opcional
                         ps.setString(8, "activo");
                         ps.executeUpdate();
                     } catch (SQLException e) {
                         System.err.println("❌ Error al crear entrada en docentes: " + e.getMessage());
+                    }
+                }
+
+                // ✅ Crear entrada en estudiantes si el rol es estudiante
+                if ("estudiante".equalsIgnoreCase(nuevo.getRol())) {
+                    String[] partes = nuevo.getNombre().split(" ", 2);
+                    String nombreEstudiante = partes[0];
+                    String apellidoEstudiante = (partes.length > 1) ? partes[1] : "";
+
+                    String sqlEstudiante = "INSERT INTO estudiantes (id_usuario, nombre, apellido, correo, instrumento, etapa_pedagogica, fecha_ingreso, estado) " +
+                                           "VALUES (?, ?, ?, ?, ?, ?, NOW(), ?)";
+
+                    try (PreparedStatement ps = conn.prepareStatement(sqlEstudiante)) {
+                        ps.setInt(1, idUsuario);
+                        ps.setString(2, nombreEstudiante);
+                        ps.setString(3, apellidoEstudiante);
+                        ps.setString(4, nuevo.getCorreo());
+                        ps.setString(5, ""); // instrumento opcional
+                        ps.setString(6, ""); // etapa pedagógica opcional
+                        ps.setString(7, "activo");
+                        ps.executeUpdate();
+                    } catch (SQLException e) {
+                        System.err.println("❌ Error al crear entrada en estudiantes: " + e.getMessage());
                     }
                 }
 
@@ -155,7 +180,6 @@ public class RegistrarUsuarioServlet extends HttpServlet {
             e.printStackTrace();
             mensaje = "❌ Error al registrar usuario.";
         }
-      
 
         // ✅ Respuesta JSON si la petición viene de Postman
         String acceptHeader = request.getHeader("Accept");
