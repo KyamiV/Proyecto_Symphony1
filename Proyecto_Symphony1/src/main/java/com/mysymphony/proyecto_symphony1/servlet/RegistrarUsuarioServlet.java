@@ -31,7 +31,6 @@ import java.util.Map;
 @WebServlet("/RegistrarUsuarioServlet")
 public class RegistrarUsuarioServlet extends HttpServlet {
 
-    // ✅ GET: mostrar formulario de registro
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -39,7 +38,6 @@ public class RegistrarUsuarioServlet extends HttpServlet {
         HttpSession sesion = request.getSession(false);
         String rol = (sesion != null) ? (String) sesion.getAttribute("rolActivo") : null;
 
-        // 🔒 Validación de rol administrador
         if (rol == null || !"administrador".equalsIgnoreCase(rol)) {
             if (sesion != null) {
                 sesion.setAttribute("mensaje", "⚠️ Acceso restringido: requiere rol administrador.");
@@ -48,11 +46,9 @@ public class RegistrarUsuarioServlet extends HttpServlet {
             return;
         }
 
-        // Forward al formulario JSP institucional
         request.getRequestDispatcher("/administrador/registrarUsuario.jsp").forward(request, response);
     }
 
-    // ✅ POST: procesar registro de usuario
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -61,7 +57,6 @@ public class RegistrarUsuarioServlet extends HttpServlet {
         String rol = (sesion != null) ? (String) sesion.getAttribute("rolActivo") : null;
         String admin = (sesion != null) ? (String) sesion.getAttribute("nombreActivo") : "desconocido";
 
-        // 🔒 Validación de rol administrador
         if (rol == null || !"administrador".equalsIgnoreCase(rol)) {
             if (sesion != null) {
                 sesion.setAttribute("mensaje", "⚠️ Acceso restringido: requiere rol administrador.");
@@ -70,7 +65,6 @@ public class RegistrarUsuarioServlet extends HttpServlet {
             return;
         }
 
-        // 📥 Parámetros básicos del formulario
         String nombre = request.getParameter("nombre");
         String correo = request.getParameter("usuario");
         String clave = request.getParameter("clave");
@@ -84,11 +78,9 @@ public class RegistrarUsuarioServlet extends HttpServlet {
             nuevo.setNombre(nombre);
             nuevo.setCorreo(correo);
 
-            // ⚠️ Seguridad: cifrar clave antes de guardar
             String claveHash = HashUtil.hashPassword(clave);
             nuevo.setClave(claveHash);
 
-            // Rol validado, por defecto estudiante
             if ("administrador".equalsIgnoreCase(rolNuevo) ||
                 "docente".equalsIgnoreCase(rolNuevo) ||
                 "estudiante".equalsIgnoreCase(rolNuevo)) {
@@ -99,7 +91,6 @@ public class RegistrarUsuarioServlet extends HttpServlet {
 
             boolean registrado = dao.registrarBasico(nuevo);
 
-            // 🛡️ Auditoría institucional
             Map<String, String> registro = new HashMap<>();
             registro.put("usuario", admin + " (ID: " + sesion.getAttribute("idActivo") + ")");
             registro.put("rol", rol);
@@ -110,7 +101,6 @@ public class RegistrarUsuarioServlet extends HttpServlet {
                 registro.put("detalle", "Correo: " + correo);
                 new AuditoriaDAO(conn).registrarAccion(registro);
 
-                // 📝 Bitácora institucional
                 BitacoraDAO bitacoraDAO = new BitacoraDAO(conn);
                 bitacoraDAO.registrarAccion(
                         "Administrador registró usuario institucional: " + nombre,
@@ -181,16 +171,14 @@ public class RegistrarUsuarioServlet extends HttpServlet {
             mensaje = "❌ Error al registrar usuario.";
         }
 
-        // ✅ Respuesta JSON si la petición viene de Postman
         String acceptHeader = request.getHeader("Accept");
         if (acceptHeader != null && acceptHeader.contains("application/json")) {
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
             response.getWriter().write("{\"status\":\"ok\",\"mensaje\":\"" + mensaje + "\"}");
-            return; // 👈 importante: salir para no redirigir
+            return;
         }
 
-        // 👉 Si no es JSON (ej. navegador), redirigir normalmente
         if (sesion != null) {
             sesion.setAttribute("mensaje", mensaje);
         }

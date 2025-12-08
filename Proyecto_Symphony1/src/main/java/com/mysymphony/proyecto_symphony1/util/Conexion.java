@@ -17,11 +17,11 @@ import java.sql.SQLException;
 public class Conexion {
 
     // 🔹 Configuración de conexión mediante variables de entorno
-    private static final String HOST = System.getenv("DB_HOST");     // Ej: mysql-symphony
-    private static final String PORT = System.getenv("DB_PORT");     // Ej: 3306
-    private static final String DB   = System.getenv("DB_NAME");     // Ej: symphony_db
-    private static final String USER = System.getenv("DB_USER");     // Ej: root
-    private static final String PASS = System.getenv("DB_PASS");     // Ej: Admin1234* o vacío
+    private static final String HOST = System.getenv("DB_HOST") != null ? System.getenv("DB_HOST") : "localhost";
+    private static final String PORT = System.getenv("DB_PORT") != null ? System.getenv("DB_PORT") : "3306";
+    private static final String DB   = System.getenv("DB_NAME") != null ? System.getenv("DB_NAME") : "symphony_db";
+    private static final String USER = System.getenv("DB_USER") != null ? System.getenv("DB_USER") : "root";
+    private static final String PASS = System.getenv("DB_PASS") != null ? System.getenv("DB_PASS") : "";   // Ej: Admin1234* o vacío
 
     // 🔹 Construcción dinámica de la URL JDBC
     private static final String URL =
