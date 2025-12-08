@@ -54,7 +54,7 @@ public class VerTablasRecibidasServlet extends HttpServlet {
                          "FROM tablas_guardadas t " +
                          "JOIN clases c ON t.id_clase = c.id_clase " +
                          "JOIN usuarios u ON t.id_docente = u.id_usuario " +
-                         "WHERE t.enviada = TRUE AND (t.validada IS NULL OR t.validada = 'No') " +
+                         "WHERE t.enviada = 1 AND (t.validada IS NULL OR t.validada = 'No') " +
                          "ORDER BY t.fecha_envio DESC";
 
             try (PreparedStatement ps = conn.prepareStatement(sql);

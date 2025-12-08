@@ -104,6 +104,6 @@ public class EliminarClaseServlet extends HttpServlet {
         }
 
         sesion.setAttribute("mensaje", mensaje);
-        response.sendRedirect(request.getContextPath() + "/AsignarEstudiantesServlet");
+        response.sendRedirect(request.getContextPath() + "/GestionarClasesPrincipalServlet");
     }
 }
