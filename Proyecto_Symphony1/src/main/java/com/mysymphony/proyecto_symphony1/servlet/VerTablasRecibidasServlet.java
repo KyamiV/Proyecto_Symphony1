@@ -30,7 +30,7 @@ public class VerTablasRecibidasServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // 🔐 Validar sesión activa y rol administrador
+        //  Validar sesión activa y rol administrador
         HttpSession sesion = request.getSession(false);
         String rol = (sesion != null) ? (String) sesion.getAttribute("rolActivo") : null;
         String admin = (sesion != null) ? (String) sesion.getAttribute("nombreActivo") : "desconocido";
@@ -48,12 +48,13 @@ public class VerTablasRecibidasServlet extends HttpServlet {
 
         try (Connection conn = Conexion.getConnection()) {
 
-            // 📄 Consulta SQL desde tablas_guardadas con estado enviada y NO validadas
+            //  Consulta SQL desde tablas_guardadas con estado enviada y NO validadas
             String sql = "SELECT t.id, t.nombre, t.descripcion, t.fecha_envio, " +
-                         "c.nombre_clase AS clase, u.nombre AS docente " +
+                         "COALESCE(c.nombre_clase, 'Sin clase') AS clase, " +
+                         "COALESCE(u.nombre, 'Sin docente') AS docente " +
                          "FROM tablas_guardadas t " +
-                         "JOIN clases c ON t.id_clase = c.id_clase " +
-                         "JOIN usuarios u ON t.id_docente = u.id_usuario " +
+                         "LEFT JOIN clases c ON t.id_clase = c.id_clase " +
+                         "LEFT JOIN usuarios u ON t.id_docente = u.id_usuario " +
                          "WHERE t.enviada = 1 AND (t.validada IS NULL OR t.validada = 'No') " +
                          "ORDER BY t.fecha_envio DESC";
 
@@ -72,7 +73,7 @@ public class VerTablasRecibidasServlet extends HttpServlet {
                 }
             }
 
-            // 📝 Auditoría institucional
+            //  Auditoría institucional
             Map<String, String> registro = new HashMap<>();
             registro.put("usuario", admin);
             registro.put("rol", rol);
@@ -82,7 +83,7 @@ public class VerTablasRecibidasServlet extends HttpServlet {
             registro.put("ip_origen", request.getRemoteAddr());
             new AuditoriaDAO(conn).registrarAccion(registro);
 
-            // 📖 Bitácora institucional
+            //  Bitácora institucional
             BitacoraDAO bitacoraDAO = new BitacoraDAO(conn);
             bitacoraDAO.registrarAccion("Administrador consultó tablas institucionales recibidas de docentes",
                     admin, rol, "Tablas recibidas");
@@ -92,7 +93,7 @@ public class VerTablasRecibidasServlet extends HttpServlet {
             request.setAttribute("mensaje", "❌ Error al consultar tablas recibidas.");
         }
 
-        // 📤 Enviar lista de tablas a la vista administrativa
+        //  Enviar lista de tablas a la vista administrativa
         request.setAttribute("tablasRecibidas", tablas);
         request.getRequestDispatcher("/administrador/tablasRecibidas.jsp").forward(request, response);
     }

@@ -117,7 +117,7 @@
                     <i class="fas fa-users"></i>
                     <h5>Gestión de Usuarios</h5>
                     <p>Administrar cuentas y roles institucionales.</p>
-                    <a href="GestionarUsuariosServlet" class="btn btn-success">Acceder</a>
+                    <a href="VerUsuariosServlet" class="btn btn-success">Acceder</a>
                 </div>
             </div>
             <div class="col-md-3 mb-4">
