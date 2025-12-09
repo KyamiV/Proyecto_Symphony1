@@ -189,62 +189,112 @@ public boolean registrarNotaPorClase(int estudianteId, int claseId,
                                      String observacion, String fecha,
                                      int docenteId, String instrumento,
                                      String etapa, int tablaId, String registradaPor) {
+
     if (fecha == null || fecha.trim().isEmpty()) {
         System.err.println("⚠️ Fecha inválida: no se puede registrar nota sin fecha.");
         return false;
     }
 
-    // Validar formato de fecha (YYYY-MM-DD)
-    java.sql.Date fechaSql;
+    // Normalizar strings para evitar duplicados por espacios/case
+    competencia   = (competencia   != null) ? competencia.trim()   : "";
+    instrumento   = (instrumento   != null) ? instrumento.trim()   : null;
+    etapa         = (etapa         != null) ? etapa.trim()         : null;
+    observacion   = (observacion   != null) ? observacion.trim()   : null;
+    registradaPor = (registradaPor != null) ? registradaPor.trim() : null;
+
+    // Convertir fecha a DATETIME robusto
+    java.sql.Timestamp fechaSql;
     try {
-        fechaSql = java.sql.Date.valueOf(fecha);
-    } catch (IllegalArgumentException ex) {
+        String fechaNormalizada = fecha.trim();
+        if (fechaNormalizada.length() == 10) { // formato "YYYY-MM-DD"
+            java.time.LocalDate fechaLocal = java.time.LocalDate.parse(fechaNormalizada);
+            fechaSql = java.sql.Timestamp.valueOf(fechaLocal.atStartOfDay());
+        } else {
+            // Si viene "YYYY-MM-DD HH:MM" lo completamos con ":00"
+            if (fechaNormalizada.length() == 16) {
+                fechaNormalizada = fechaNormalizada + ":00";
+            }
+            fechaSql = java.sql.Timestamp.valueOf(fechaNormalizada);
+        }
+    } catch (Exception ex) {
         System.err.println("⚠️ Formato de fecha inválido: " + fecha);
+        ex.printStackTrace();
         return false;
     }
 
-    // Validar existencia del estudiante
-    String validarSql = "SELECT 1 FROM estudiantes WHERE id_estudiante = ?";
-    try (PreparedStatement psVal = conn.prepareStatement(validarSql)) {
+    // Verificar FK estudiante
+    try (PreparedStatement psVal = conn.prepareStatement(
+            "SELECT 1 FROM estudiantes WHERE id_estudiante = ?")) {
         psVal.setInt(1, estudianteId);
         try (ResultSet rs = psVal.executeQuery()) {
             if (!rs.next()) {
-                System.err.println("⚠️ El estudiante con id=" + estudianteId + " no existe.");
+                System.err.println("⚠️ El estudiante con id=" + estudianteId + " no existe en esta BD.");
                 return false;
             }
         }
     } catch (SQLException e) {
         System.err.println("❌ Error al validar estudiante: " + e.getMessage());
+        e.printStackTrace();
         return false;
     }
 
-    // Insertar nota con metadatos completos
-    String sql = "INSERT INTO notas_clase " +
-                 "(id_estudiante, id_docente, id_tabla, id_clase, competencia, instrumento, etapa, nota, observacion, estado, fecha, fecha_registro, registrada_por) " +
-                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'registrada', ?, NOW(), ?)";
+    // Verificar FK clase
+    try (PreparedStatement psVal = conn.prepareStatement(
+            "SELECT 1 FROM clases WHERE id_clase = ?")) {
+        psVal.setInt(1, claseId);
+        try (ResultSet rs = psVal.executeQuery()) {
+            if (!rs.next()) {
+                System.err.println("⚠️ La clase con id=" + claseId + " no existe en esta BD.");
+                return false;
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("❌ Error al validar clase: " + e.getMessage());
+        e.printStackTrace();
+        return false;
+    }
 
-    try (PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setInt(1, estudianteId);
-        ps.setInt(2, docenteId);
-        ps.setInt(3, tablaId);          // vínculo con la tabla guardada
-        ps.setInt(4, claseId);
-        ps.setString(5, competencia);
-        ps.setString(6, instrumento);
-        ps.setString(7, etapa);
-        ps.setDouble(8, nota);
-        ps.setString(9, observacion);
-        ps.setDate(10, fechaSql);       // fecha validada y convertida
-        ps.setString(11, registradaPor); // docente en sesión
-        int filas = ps.executeUpdate();
-        if (filas > 0) {
-            System.out.println("✔ Nota registrada correctamente en BD.");
-            return true;
-        } else {
-            System.err.println("⚠️ El INSERT no afectó filas.");
-            return false;
+    // Preparar INSERT alineado con ambas columnas de calificación
+    String sql = "INSERT INTO notas_clase " +
+            "(id_estudiante, id_docente, id_tabla, id_clase, competencia, instrumento, etapa, " +
+            " nota, calificacion, observacion, estado, fecha, fecha_registro, registrada_por) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'registrada', ?, NOW(), ?)";
+
+    try {
+        if (!conn.getAutoCommit()) {
+            conn.setAutoCommit(true);
+        }
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, estudianteId);
+            ps.setInt(2, docenteId);
+            ps.setInt(3, tablaId);
+            ps.setInt(4, claseId);
+            ps.setString(5, competencia);
+            ps.setString(6, instrumento);
+            ps.setString(7, etapa);
+            ps.setDouble(8, nota);         // nota
+            ps.setDouble(9, nota);         // calificacion (mismo valor)
+            ps.setString(10, observacion);
+            ps.setTimestamp(11, fechaSql); // fecha DATETIME
+            ps.setString(12, registradaPor);
+
+            System.out.println("SQL preparado -> " + ps);
+
+            int filas = ps.executeUpdate();
+            System.out.println("Filas afectadas -> " + filas);
+
+            if (filas > 0) {
+                System.out.println("✔ Nota registrada correctamente en BD.");
+                return true;
+            } else {
+                System.err.println("⚠️ El INSERT no afectó filas. Revisa FKs o parámetros.");
+                return false;
+            }
         }
     } catch (SQLException e) {
         System.err.println("❌ Error al registrar nota: " + e.getMessage());
+        e.printStackTrace();
         return false;
     }
 }
@@ -415,14 +465,17 @@ public List<Map<String, Object>> listarNotasPorClase(int claseId) {
         }
         return 0;
     }
+public boolean existeNotaPorClase(int claseId, int estudianteId, String competencia) {
+    // Normalizar competencia para evitar falsos duplicados
+    String competenciaNormalizada = (competencia != null) ? competencia.trim().toLowerCase() : "";
 
-    public boolean existeNotaPorClase(int claseId, int estudianteId, String competencia) {
     String sql = "SELECT COUNT(*) FROM notas_clase " +
-                 "WHERE id_clase = ? AND id_estudiante = ? AND competencia = ?";
+                 "WHERE id_clase = ? AND id_estudiante = ? AND LOWER(TRIM(competencia)) = ?";
+
     try (PreparedStatement ps = conn.prepareStatement(sql)) {
         ps.setInt(1, claseId);
         ps.setInt(2, estudianteId);
-        ps.setString(3, competencia);
+        ps.setString(3, competenciaNormalizada);
 
         try (ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
@@ -430,7 +483,7 @@ public List<Map<String, Object>> listarNotasPorClase(int claseId) {
                 boolean existe = count > 0;
                 System.out.println("🔎 Validación duplicado → claseId=" + claseId +
                                    ", estudianteId=" + estudianteId +
-                                   ", competencia=" + competencia +
+                                   ", competencia=" + competenciaNormalizada +
                                    " → existe=" + existe);
                 return existe;
             }
@@ -443,6 +496,7 @@ public List<Map<String, Object>> listarNotasPorClase(int claseId) {
         return false;
     }
 }
+    
 
     /**
  * 📋 Listar estudiantes inscritos en una clase
