@@ -14,29 +14,12 @@
         return;
     }
 
-    // Datos de ejemplo (pueden venir del servlet con request.setAttribute)
-    List<Map<String,String>> notas = new ArrayList<>();
-    Map<String,String> fila1 = new HashMap<>();
-    fila1.put("id_clase","1");
-    fila1.put("estudiante","Manuelita ApellidoReal");
-    fila1.put("competencia","Principal");
-    fila1.put("nota","4,5");
-    fila1.put("observacion","Excelente");
-    fila1.put("fecha","2025-11-29");
-    notas.add(fila1);
+    // Recuperar notas enviadas por el servlet
+    List<Map<String,String>> notas = (List<Map<String,String>>) request.getAttribute("notas");
 
-    Map<String,String> fila2 = new HashMap<>();
-    fila2.put("id_clase","1");
-    fila2.put("estudiante","Manuelita ApellidoReal");
-    fila2.put("competencia","Técnica");
-    fila2.put("nota","3,0");
-    fila2.put("observacion","Falta armonía");
-    fila2.put("fecha","2025-11-28");
-    notas.add(fila2);
-
-    // Parámetros de tabla/clase para enviar al admin (ejemplo)
-    Integer tablaId = 1;
-    Integer claseId = 1;
+    // Recuperar parámetros de tabla/clase
+    Integer tablaId = (Integer) request.getAttribute("tablaId");
+    Integer claseId = (Integer) request.getAttribute("claseId");
 %>
 
 <!DOCTYPE html>
@@ -75,7 +58,8 @@
                 </tr>
             </thead>
             <tbody>
-                <% for (Map<String,String> fila : notas) { %>
+                <% if (notas != null && !notas.isEmpty()) {
+                       for (Map<String,String> fila : notas) { %>
                 <tr>
                     <td><%= fila.get("id_clase") %></td>
                     <td><%= fila.get("estudiante") %></td>
@@ -95,7 +79,7 @@
                         </form>
 
                         <!-- Formulario para eliminar -->
-                        <form action="<%= request.getContextPath() %>/EliminarNotaClaseServlet" method="post" style="display:inline;" 
+                        <form action="<%= request.getContextPath() %>/EliminarNotaClaseServlet" method="post" style="display:inline;"
                               onsubmit="return confirm('¿Seguro que deseas eliminar esta nota?');">
                             <input type="hidden" name="id_clase" value="<%= fila.get("id_clase") %>"/>
                             <input type="hidden" name="estudiante" value="<%= fila.get("estudiante") %>"/>
@@ -105,6 +89,11 @@
                             </button>
                         </form>
                     </td>
+                </tr>
+                <%   }
+                   } else { %>
+                <tr>
+                    <td colspan="7" class="text-center">No hay notas registradas para esta clase.</td>
                 </tr>
                 <% } %>
             </tbody>

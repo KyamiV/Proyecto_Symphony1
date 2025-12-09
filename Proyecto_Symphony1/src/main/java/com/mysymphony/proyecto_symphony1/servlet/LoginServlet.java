@@ -57,7 +57,6 @@ public class LoginServlet extends HttpServlet {
         try (Connection conn = Conexion.getConnection()) {
 
             if (conn == null) {
-                // 🚨 Conexión fallida: mostrar error claro
                 manejarRespuesta(request, response, false, "❌ Error: No se pudo conectar a la base de datos.", null);
                 return;
             }
@@ -88,21 +87,26 @@ public class LoginServlet extends HttpServlet {
             request.getSession().invalidate();
             HttpSession session = request.getSession(true);
 
-            // Datos de sesión
+            // Datos de sesión comunes
             session.setAttribute("usuarioActivo", usuario.getCorreo());
             session.setAttribute("nombreActivo", usuario.getNombre());
             session.setAttribute("rolActivo", usuario.getRol());
 
-            // Guardar ID según rol
+            // Guardar IDs según rol
             switch (usuario.getRol().toLowerCase()) {
                 case "estudiante":
                     session.setAttribute("idActivo", usuario.getIdEstudiante());
+                    session.setAttribute("idEstudiante", usuario.getIdEstudiante());
+                    session.setAttribute("idUsuario", usuario.getIdUsuario());
                     break;
                 case "docente":
-                    session.setAttribute("idActivo", usuario.getIdDocente());
+                    session.setAttribute("idActivo", usuario.getIdDocente());   // usado por servlets
+                    session.setAttribute("idDocente", usuario.getIdDocente()); // FK real en tabla docentes
+                    session.setAttribute("idUsuario", usuario.getIdUsuario()); // útil para auditoría
                     break;
                 case "administrador":
                     session.setAttribute("idActivo", usuario.getIdUsuario());
+                    session.setAttribute("idUsuario", usuario.getIdUsuario());
                     break;
             }
 

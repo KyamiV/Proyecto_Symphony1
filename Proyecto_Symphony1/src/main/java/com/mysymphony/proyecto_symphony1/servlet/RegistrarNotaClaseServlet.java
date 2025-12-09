@@ -30,44 +30,52 @@ public class RegistrarNotaClaseServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // ✅ Evita error 405 delegando en doPost
-        doPost(request, response);
+        doPost(request, response); // ✅ Evita error 405
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // 🔹 1. Validación de sesión y rol
         HttpSession sesion = request.getSession(false);
         String rol = (sesion != null) ? (String) sesion.getAttribute("rolActivo") : null;
-        Integer idDocente = (sesion != null) ? (Integer) sesion.getAttribute("idActivo") : null;
+
+        Integer idUsuario = (sesion != null) ? (Integer) sesion.getAttribute("idUsuario") : null;
+        Integer idDocente = (sesion != null) ? (Integer) sesion.getAttribute("idDocente") : null;
         String nombreDocente = (sesion != null) ? (String) sesion.getAttribute("nombreActivo") : "desconocido";
 
         if (rol == null || !"docente".equalsIgnoreCase(rol) || idDocente == null) {
-            request.setAttribute("tipoMensaje", "danger");
-            request.setAttribute("mensaje", "⚠️ Acceso restringido: requiere rol docente.");
-            request.getRequestDispatcher("/fragmentos/error.jsp").forward(request, response);
+            System.out.println("Error → Acceso restringido. Rol=" + rol + ", idDocente=" + idDocente);
+            sesion.setAttribute("tipoMensaje", "danger");
+            sesion.setAttribute("mensaje", "⚠️ Acceso restringido: requiere rol docente.");
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
 
-        // 🔹 2. Obtener parámetros del formulario
         String claseIdStr = request.getParameter("claseId");
         String idEstudianteStr = request.getParameter("idEstudiante");
-        String competencia = request.getParameter("competencia");
+        String competencia = (request.getParameter("competencia") != null) ? request.getParameter("competencia").trim() : "";
         String notaStr = request.getParameter("nota");
-        String observacion = request.getParameter("observacion");
-        String fechaStr = request.getParameter("fecha"); // viene como YYYY-MM-DD
-        String instrumento = request.getParameter("instrumento"); // opcional
-        String etapa = request.getParameter("etapa");             // opcional
+        String observacion = (request.getParameter("observacion") != null) ? request.getParameter("observacion").trim() : null;
+        String fechaStr = request.getParameter("fecha");
+        String instrumento = (request.getParameter("instrumento") != null) ? request.getParameter("instrumento").trim() : null;
+        String etapa = (request.getParameter("etapa") != null) ? request.getParameter("etapa").trim() : null;
 
-        // Validaciones básicas
+        System.out.println("Parametros recibidos -> claseId=" + claseIdStr +
+                ", idEstudiante=" + idEstudianteStr +
+                ", competencia=" + competencia +
+                ", nota=" + notaStr +
+                ", fecha=" + fechaStr +
+                ", observacion=" + observacion +
+                ", instrumento=" + instrumento +
+                ", etapa=" + etapa);
+
         if (claseIdStr == null || claseIdStr.isEmpty() ||
             idEstudianteStr == null || idEstudianteStr.isEmpty() ||
-            competencia == null || competencia.isEmpty() ||
-            notaStr == null || notaStr.isEmpty() ||
+            competencia.isEmpty() || notaStr == null || notaStr.isEmpty() ||
             fechaStr == null || fechaStr.isEmpty()) {
 
+            System.out.println("Error → Faltan parámetros obligatorios.");
             sesion.setAttribute("tipoMensaje", "danger");
             sesion.setAttribute("mensaje", "⚠️ Faltan parámetros obligatorios.");
             response.sendRedirect(request.getContextPath() + "/CargarNotasServlet?claseId=" + (claseIdStr != null ? claseIdStr : ""));
@@ -81,6 +89,7 @@ public class RegistrarNotaClaseServlet extends HttpServlet {
             estudianteId = Integer.parseInt(idEstudianteStr);
             nota = Double.parseDouble(notaStr);
         } catch (NumberFormatException e) {
+            System.out.println("Error → Formato inválido en IDs o nota: " + e.getMessage());
             sesion.setAttribute("tipoMensaje", "danger");
             sesion.setAttribute("mensaje", "⚠️ Error de formato en IDs o nota.");
             response.sendRedirect(request.getContextPath() + "/CargarNotasServlet?claseId=" + claseIdStr);
@@ -88,33 +97,53 @@ public class RegistrarNotaClaseServlet extends HttpServlet {
         }
 
         if (nota < 0 || nota > 5) {
+            System.out.println("Error → Nota fuera de rango: " + nota);
             sesion.setAttribute("tipoMensaje", "warning");
             sesion.setAttribute("mensaje", "⚠️ La nota debe estar entre 0 y 5.");
             response.sendRedirect(request.getContextPath() + "/CargarNotasServlet?claseId=" + claseId);
             return;
         }
 
-        // 🔹 3. Registrar nota en BD
         try (Connection conn = Conexion.getConnection()) {
+            if (conn == null) {
+                System.out.println("Error → Conexión a BD nula.");
+                sesion.setAttribute("tipoMensaje", "danger");
+                sesion.setAttribute("mensaje", "❌ Error: No se pudo conectar a la base de datos.");
+                response.sendRedirect(request.getContextPath() + "/CargarNotasServlet?claseId=" + claseId);
+                return;
+            }
+
             NotaDAO notaDAO = new NotaDAO(conn);
 
-            // Validar existencia del estudiante (si no existe, se registra igual con nombre vacío)
             if (!notaDAO.existeEstudiante(estudianteId)) {
+                System.out.println("Advertencia → Estudiante no vinculado en BD: id=" + estudianteId);
                 sesion.setAttribute("tipoMensaje", "warning");
                 sesion.setAttribute("mensaje", "✔ Nota registrada, pero el estudiante no está vinculado en el sistema.");
             }
 
-            // 🔹 Obtener o crear tabla guardada automáticamente
             int tablaId = notaDAO.obtenerIdTablaGuardada(claseId, idDocente);
             if (tablaId == 0) {
                 tablaId = notaDAO.crearTablaGuardada(claseId, idDocente, nombreDocente);
+                System.out.println("Info → Se creó nueva tabla guardada con id=" + tablaId);
             }
 
-            // 🔹 Convertir fecha a DATETIME válido
             String fechaCompleta = fechaStr + " 00:00:00";
 
-            // Validar duplicado por clase/competencia
+            System.out.println("RegistrarNotaClaseServlet -> estudianteId=" + estudianteId +
+                    ", claseId=" + claseId +
+                    ", competencia=" + competencia +
+                    ", nota=" + nota +
+                    ", observacion=" + observacion +
+                    ", fecha=" + fechaCompleta +
+                    ", docenteId=" + idDocente +
+                    ", usuarioId=" + idUsuario +
+                    ", instrumento=" + instrumento +
+                    ", etapa=" + etapa +
+                    ", tablaId=" + tablaId +
+                    ", registradaPor=" + nombreDocente);
+
             if (notaDAO.existeNotaPorClase(claseId, estudianteId, competencia)) {
+                System.out.println("Error → Nota duplicada para estudiante=" + estudianteId + " en competencia=" + competencia);
                 sesion.setAttribute("tipoMensaje", "warning");
                 sesion.setAttribute("mensaje", "⚠️ Ya existe una nota para este estudiante en esta competencia.");
             } else {
@@ -128,41 +157,49 @@ public class RegistrarNotaClaseServlet extends HttpServlet {
                         idDocente,
                         instrumento,
                         etapa,
-                        tablaId,       // ✅ id_tabla válido
-                        nombreDocente  // registrada_por
+                        tablaId,
+                        nombreDocente
                 );
 
                 if (exito) {
+                    System.out.println("Éxito → Nota registrada correctamente.");
                     sesion.setAttribute("tipoMensaje", "success");
-                    sesion.setAttribute("mensaje", "✔ Nota registrada correctamente.");
+                    sesion.setAttribute("mensaje", "✔ Nota registrada correctamente (pendiente de consolidar tabla).");
 
-                    // 🛡️ Auditoría institucional
                     Map<String, String> registro = new HashMap<>();
-                    registro.put("usuario", nombreDocente + " (ID: " + idDocente + ")");
+                    registro.put("usuario", nombreDocente + " (UsuarioID: " + idUsuario + ", DocenteID: " + idDocente + ")");
                     registro.put("rol", rol);
                     registro.put("accion", "Registró nota para estudiante " + estudianteId + " en clase " + claseId);
                     registro.put("modulo", "Registro de notas");
                     registro.put("ip_origen", request.getRemoteAddr());
                     new AuditoriaDAO(conn).registrarAccion(registro);
 
-                    // 📖 Bitácora institucional
                     new BitacoraDAO(conn).registrarAccion(
                             "Docente registró nota para estudiante " + estudianteId + " en clase " + claseId,
                             nombreDocente, rol, "Registro de notas"
                     );
                 } else {
+                    System.out.println("Error → registrarNotaPorClase devolvió false.");
                     sesion.setAttribute("tipoMensaje", "danger");
                     sesion.setAttribute("mensaje", "❌ Error al registrar la nota.");
                 }
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+                } catch (Exception e) {
+            System.out.println("Error → Excepción al registrar nota: " + e.getMessage());
+            e.printStackTrace(); // imprime el detalle completo en Tomcat
             sesion.setAttribute("tipoMensaje", "danger");
             sesion.setAttribute("mensaje", "❌ Error al registrar nota: " + e.getMessage());
         }
 
         // 🔹 4. Redirigir al flujo de carga de notas
-        response.sendRedirect(request.getContextPath() + "/CargarNotasServlet?claseId=" + claseId);
+        try {
+            response.sendRedirect(request.getContextPath() + "/CargarNotasServlet?claseId=" + claseId);
+        } catch (Exception e) {
+            System.out.println("Error → Fallo al redirigir: " + e.getMessage());
+            sesion.setAttribute("tipoMensaje", "danger");
+            sesion.setAttribute("mensaje", "❌ Error al redirigir después de registrar nota.");
+            request.getRequestDispatcher("/fragmentos/error.jsp").forward(request, response);
+        }
     }
 }
