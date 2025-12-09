@@ -2,13 +2,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-
 package com.mysymphony.proyecto_symphony1.servlet;
 
 /**
  * Rol: Docente
- * Servlet simplificado para registrar UNA nota por clase.
- * Recibe estudiante, competencia, nota, observación y fecha desde el formulario.
+ * Servlet maestro para registrar UNA nota por clase.
+ * Recibe estudiante, competencia, nota, observación e información de trazabilidad.
  * Autor: Camila
  * Trazabilidad: valida sesión, registra nota y guarda auditoría y bitácora institucional.
  */
@@ -48,7 +47,7 @@ public class RegistrarNotaClaseServlet extends HttpServlet {
         if (rol == null || !"docente".equalsIgnoreCase(rol) || idDocente == null) {
             request.setAttribute("tipoMensaje", "danger");
             request.setAttribute("mensaje", "⚠️ Acceso restringido: requiere rol docente.");
-            request.getRequestDispatcher("/error.jsp").forward(request, response);
+            request.getRequestDispatcher("/fragmentos/error.jsp").forward(request, response);
             return;
         }
 
@@ -58,16 +57,16 @@ public class RegistrarNotaClaseServlet extends HttpServlet {
         String competencia = request.getParameter("competencia");
         String notaStr = request.getParameter("nota");
         String observacion = request.getParameter("observacion");
-        String fecha = request.getParameter("fecha");
-        String instrumento = request.getParameter("instrumento"); // opcional desde JSP
-        String etapa = request.getParameter("etapa");             // opcional desde JSP
+        String fechaStr = request.getParameter("fecha"); // viene como YYYY-MM-DD
+        String instrumento = request.getParameter("instrumento"); // opcional
+        String etapa = request.getParameter("etapa");             // opcional
 
         // Validaciones básicas
         if (claseIdStr == null || claseIdStr.isEmpty() ||
             idEstudianteStr == null || idEstudianteStr.isEmpty() ||
             competencia == null || competencia.isEmpty() ||
             notaStr == null || notaStr.isEmpty() ||
-            fecha == null || fecha.isEmpty()) {
+            fechaStr == null || fechaStr.isEmpty()) {
 
             sesion.setAttribute("tipoMensaje", "danger");
             sesion.setAttribute("mensaje", "⚠️ Faltan parámetros obligatorios.");
@@ -99,12 +98,10 @@ public class RegistrarNotaClaseServlet extends HttpServlet {
         try (Connection conn = Conexion.getConnection()) {
             NotaDAO notaDAO = new NotaDAO(conn);
 
-            // Validar existencia del estudiante
+            // Validar existencia del estudiante (si no existe, se registra igual con nombre vacío)
             if (!notaDAO.existeEstudiante(estudianteId)) {
-                sesion.setAttribute("tipoMensaje", "danger");
-                sesion.setAttribute("mensaje", "⚠️ El estudiante no existe en la base de datos.");
-                response.sendRedirect(request.getContextPath() + "/CargarNotasServlet?claseId=" + claseId);
-                return;
+                sesion.setAttribute("tipoMensaje", "warning");
+                sesion.setAttribute("mensaje", "✔ Nota registrada, pero el estudiante no está vinculado en el sistema.");
             }
 
             // 🔹 Obtener o crear tabla guardada automáticamente
@@ -112,6 +109,9 @@ public class RegistrarNotaClaseServlet extends HttpServlet {
             if (tablaId == 0) {
                 tablaId = notaDAO.crearTablaGuardada(claseId, idDocente, nombreDocente);
             }
+
+            // 🔹 Convertir fecha a DATETIME válido
+            String fechaCompleta = fechaStr + " 00:00:00";
 
             // Validar duplicado por clase/competencia
             if (notaDAO.existeNotaPorClase(claseId, estudianteId, competencia)) {
@@ -124,7 +124,7 @@ public class RegistrarNotaClaseServlet extends HttpServlet {
                         competencia,
                         nota,
                         observacion,
-                        fecha,
+                        fechaCompleta,
                         idDocente,
                         instrumento,
                         etapa,
@@ -134,7 +134,7 @@ public class RegistrarNotaClaseServlet extends HttpServlet {
 
                 if (exito) {
                     sesion.setAttribute("tipoMensaje", "success");
-                    sesion.setAttribute("mensaje", "✔ Nota registrada correctamente para el estudiante.");
+                    sesion.setAttribute("mensaje", "✔ Nota registrada correctamente.");
 
                     // 🛡️ Auditoría institucional
                     Map<String, String> registro = new HashMap<>();

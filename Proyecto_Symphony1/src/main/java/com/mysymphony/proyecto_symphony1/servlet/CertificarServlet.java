@@ -29,6 +29,7 @@ import java.util.Map;
  *   - Recibe id_tabla desde JSP
  *   - Obtiene datos de clase/docente asociados
  *   - Inserta certificados en certificados_estudiante (uno por cada estudiante inscrito)
+ *   - Marca la tabla como certificada en tablas_guardadas
  *   - Registra acción en bitácora y auditoría
  */
 @WebServlet("/CertificarServlet")
@@ -113,6 +114,9 @@ public class CertificarServlet extends HttpServlet {
             }
 
             if (ok) {
+                // 🔹 Marcar la tabla como certificada en tablas_guardadas
+                tablaDAO.marcarComoCertificada(idTabla);
+
                 // Bitácora
                 BitacoraDAO bitacoraDAO = new BitacoraDAO(conn);
                 bitacoraDAO.registrarAccion("Administrador emitió certificados de tabla ID " + idTabla,

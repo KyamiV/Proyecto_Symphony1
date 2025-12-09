@@ -30,7 +30,7 @@ import java.time.LocalDateTime;
  *
  * Tablas institucionales: - clases - usuarios (incluye rol='docente') -
  * clases_asignadas (id_clase, id_docente, fecha_asignacion, estado) -
- * inscripciones_clase (id_estudiante, clase_id, fecha_asignacion[, estado])
+ * inscripciones_clase (id_estudiante, id_clase, fecha_asignacion[, estado])
  */
 public class ClaseDAO {
 
@@ -1048,7 +1048,7 @@ public Map<String, String> obtenerDatosClase(int claseId) {
                  "       c.fecha_limite, c.estado, c.aula, c.dia_semana, c.hora_inicio, c.hora_fin, " +
                  "       c.id_docente, c.fecha_inicio, c.fecha_fin, " +
                  "       COALESCE(u.nombre, '') AS docente_nombre, " +
-                 "       (SELECT COUNT(*) FROM inscripciones_clase i WHERE i.clase_id = c.id_clase) AS inscritos " +
+                 "       (SELECT COUNT(*) FROM inscripciones_clase i WHERE i.id_clase = c.id_clase) AS inscritos " +
                  "FROM clases c " +
                  "LEFT JOIN usuarios u ON c.id_docente = u.id_usuario " +
                  "WHERE c.estado = 'disponible' " +
@@ -1111,7 +1111,7 @@ public Map<String, String> obtenerDatosClase(int claseId) {
                 + "       c.fecha_limite, c.estado, c.aula, c.dia_semana, c.hora_inicio, c.hora_fin, "
                 + "       c.id_docente, c.fecha_inicio, c.fecha_fin, "
                 + "       COALESCE(u.nombre, '') AS docente_nombre, "
-                + "       (SELECT COUNT(*) FROM inscripciones_clase i WHERE i.clase_id = c.id_clase) AS inscritos "
+                + "       (SELECT COUNT(*) FROM inscripciones_clase i WHERE i.id_clase = c.id_clase) AS inscritos "
                 + "FROM clases c "
                 + "LEFT JOIN usuarios u ON c.id_docente = u.id_usuario "
                 + "ORDER BY c.fecha_limite ASC";
@@ -1157,7 +1157,7 @@ public Map<String, String> obtenerDatosClase(int claseId) {
         String sql = "SELECT c.id_clase, c.nombre_clase, c.instrumento, c.etapa, c.grupo, c.estado, "
                 + "       COUNT(i.id_estudiante) AS inscritos "
                 + "FROM clases c "
-                + "JOIN inscripciones_clase i ON i.clase_id = c.id_clase "
+                + "JOIN inscripciones_clase i ON i.id_clase = c.id_clase "
                 + "GROUP BY c.id_clase, c.nombre_clase, c.instrumento, c.etapa, c.grupo, c.estado "
                 + "HAVING COUNT(i.id_estudiante) > 0";
         try (PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {

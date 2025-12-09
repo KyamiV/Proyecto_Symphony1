@@ -117,6 +117,16 @@ public List<Map<String, String>> listarTablasPendientes() throws SQLException {
         }
         return false;
     }
+    // 🔹 Marcar la tabla como certificada en tablas_guardadas
+    public void marcarComoCertificada(int idTabla) throws SQLException {
+    String sql = "UPDATE tablas_guardadas " +
+                 "SET estado = 'Emitido', fecha_validacion = NOW() " +
+                 "WHERE id = ?";
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, idTabla);
+        ps.executeUpdate();
+    }
+}
 
     // 🔹 Listar todas las tablas/clases validadas
 public List<Map<String, String>> listarTablasValidadas(String docenteFiltro, java.sql.Date desde, java.sql.Date hasta) throws SQLException {

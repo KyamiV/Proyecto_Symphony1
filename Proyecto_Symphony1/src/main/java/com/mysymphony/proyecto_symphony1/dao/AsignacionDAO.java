@@ -332,7 +332,7 @@ public List<DocenteConClaseDTO> listarClasesPorDocente(int idDocente) {
         String sql = "SELECT e.id AS id_estudiante, e.nombre AS estudiante " +
                      "FROM clases_asignadas a " +
                      "JOIN usuarios e ON a.id_estudiante = e.id " +
-                     "WHERE a.id_docente = ? AND a.instrumento = ? AND a.clase_id = ?";
+                     "WHERE a.id_docente = ? AND a.instrumento = ? AND a.id_clase = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, docenteId);
             ps.setString(2, instrumento);

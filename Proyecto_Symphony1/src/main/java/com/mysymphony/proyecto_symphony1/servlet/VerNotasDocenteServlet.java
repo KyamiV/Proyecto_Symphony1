@@ -57,8 +57,8 @@ public class VerNotasDocenteServlet extends HttpServlet {
             Integer tablaId = null;
             Integer claseId = null;
             if (notas != null && !notas.isEmpty()) {
-                String tablaIdStr = notas.get(0).get("tabla_id");
-                String claseIdStr = notas.get(0).get("clase_id");
+                String tablaIdStr = notas.get(0).get("id_tabla");
+                String claseIdStr = notas.get(0).get("id_clase");
 
                 if (tablaIdStr != null && !tablaIdStr.isEmpty()) {
                     tablaId = Integer.valueOf(tablaIdStr);
@@ -89,7 +89,7 @@ public class VerNotasDocenteServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             sesion.setAttribute("mensaje", "❌ Error al consultar notas.");
-            response.sendRedirect(request.getContextPath() + "/error.jsp");
+            response.sendRedirect(request.getContextPath() + "/fragmentos/error.jsp");
             return;
         }
 

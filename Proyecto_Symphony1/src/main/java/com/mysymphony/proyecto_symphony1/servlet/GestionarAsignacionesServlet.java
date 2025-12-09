@@ -131,7 +131,7 @@ public class GestionarAsignacionesServlet extends HttpServlet {
             e.printStackTrace();
             request.setAttribute("mensaje", "❌ Error al cargar gestión de asignaciones: " + e.getMessage());
             request.setAttribute("tipoMensaje", "error");
-            request.getRequestDispatcher("/error.jsp").forward(request, response);
+            request.getRequestDispatcher("/fragmentos/error.jsp").forward(request, response);
         }
     }
 

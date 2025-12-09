@@ -136,7 +136,7 @@ public class GuardarTablaNotasServlet extends HttpServlet {
             e.printStackTrace();
             sesion.setAttribute("tipoMensaje", "danger");
             sesion.setAttribute("mensaje", "❌ Error inesperado: " + e.getMessage());
-            response.sendRedirect(request.getContextPath() + "/error.jsp");
+            response.sendRedirect(request.getContextPath() + "/fragmentos/error.jsp");
         }
     }
 }

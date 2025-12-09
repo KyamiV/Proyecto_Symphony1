@@ -84,12 +84,24 @@
                     <td><%= fila.get("observacion") %></td>
                     <td><%= fila.get("fecha") %></td>
                     <td>
+                        <!-- Formulario para actualizar -->
                         <form action="<%= request.getContextPath() %>/ActualizarNotaServlet" method="post" style="display:inline;">
                             <input type="hidden" name="id_clase" value="<%= fila.get("id_clase") %>"/>
                             <input type="hidden" name="estudiante" value="<%= fila.get("estudiante") %>"/>
                             <input type="hidden" name="competencia" value="<%= fila.get("competencia") %>"/>
                             <button type="submit" class="btn btn-sm btn-success">
                                 <i class="fas fa-save"></i> Guardar
+                            </button>
+                        </form>
+
+                        <!-- Formulario para eliminar -->
+                        <form action="<%= request.getContextPath() %>/EliminarNotaClaseServlet" method="post" style="display:inline;" 
+                              onsubmit="return confirm('¿Seguro que deseas eliminar esta nota?');">
+                            <input type="hidden" name="id_clase" value="<%= fila.get("id_clase") %>"/>
+                            <input type="hidden" name="estudiante" value="<%= fila.get("estudiante") %>"/>
+                            <input type="hidden" name="competencia" value="<%= fila.get("competencia") %>"/>
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="fas fa-trash"></i> Eliminar
                             </button>
                         </form>
                     </td>
