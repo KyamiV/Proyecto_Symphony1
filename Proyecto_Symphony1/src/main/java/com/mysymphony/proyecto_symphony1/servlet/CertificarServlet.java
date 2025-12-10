@@ -115,7 +115,7 @@ public class CertificarServlet extends HttpServlet {
 
             if (ok) {
                 // 🔹 Marcar la tabla como certificada en tablas_guardadas
-                tablaDAO.marcarComoCertificada(idTabla);
+                tablaDAO.marcarComoCertificada(idTabla, usuario);
 
                 // Bitácora
                 BitacoraDAO bitacoraDAO = new BitacoraDAO(conn);
