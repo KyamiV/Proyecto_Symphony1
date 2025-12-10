@@ -118,12 +118,17 @@ public List<Map<String, String>> listarTablasPendientes() throws SQLException {
         return false;
     }
     // 🔹 Marcar la tabla como certificada en tablas_guardadas
-    public void marcarComoCertificada(int idTabla) throws SQLException {
+public void marcarComoCertificada(int idTabla, String usuarioValidador) throws SQLException {
     String sql = "UPDATE tablas_guardadas " +
-                 "SET estado = 'Emitido', fecha_validacion = NOW() " +
+                 "SET estado = 'certificada', " +
+                 "    validada = 'Sí', " +
+                 "    usuario_validador = ?, " +
+                 "    fecha_validacion = NOW(), " +
+                 "    fecha_actualizacion = NOW() " +
                  "WHERE id = ?";
     try (PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setInt(1, idTabla);
+        ps.setString(1, usuarioValidador); // administrador que certifica
+        ps.setInt(2, idTabla);
         ps.executeUpdate();
     }
 }

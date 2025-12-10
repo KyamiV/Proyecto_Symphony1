@@ -77,10 +77,12 @@ public class ValidarTablaServlet extends HttpServlet {
 
             // 1️⃣ Actualizar la tabla en tablas_guardadas como validada
             String sqlUpdateTabla = "UPDATE tablas_guardadas " +
-                                    "SET validada = 'Sí', fecha_validacion = NOW(), fecha_actualizacion = NOW() " +
+                                    "SET validada = 'Sí', estado = 'validada', usuario_validador = ?, " +
+                                    "fecha_validacion = NOW(), fecha_actualizacion = NOW() " +
                                     "WHERE id = ?";
             try (PreparedStatement ps = conn.prepareStatement(sqlUpdateTabla)) {
-                ps.setInt(1, idTabla);
+                ps.setString(1, usuario); // administrador que valida
+                ps.setInt(2, idTabla);
                 ps.executeUpdate();
             }
 
